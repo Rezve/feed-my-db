@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.react-resizable-handle-n {
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: #d1d5db; /* gray-300 */
+  cursor: ns-resize;
+}
+
+.react-resizable-handle-n:hover {
+  background: #9ca3af; /* gray-400 */
+}
+
+.overlay {
+  animation: fadeIn 0.3s ease-in;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
