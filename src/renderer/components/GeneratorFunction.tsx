@@ -87,7 +87,7 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
         <div className="section-content p-4 flex flex-col gap-4">
           <div className="editor-container bg-white border border-gray-300 rounded-md shadow-sm overflow-hidden">
             <MonacoEditor
-              height="42vh"
+              height="40vh"
               defaultLanguage="javascript"
               value={code}
               onChange={(value) => { 

@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   on: (channel: string, callback: any) => {
     const validChannels = [
       'app:status',
+      'app:log',
       'app:progress',
       'app:complete',
       'app:code:result',
