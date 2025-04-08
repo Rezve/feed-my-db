@@ -74,13 +74,21 @@ export class DataGeneratorManager {
         if (!this.DB) {
             return;
         }
-        window.webContents.send('app:status', 'Running')
-        const { tableName, totalRecords, batchSize, concurrentBatches, logInterval } = batchConfig;
-        this.inserter = new DataInserter(this.DB, totalRecords, batchSize, concurrentBatches, logInterval);
-        await this.inserter.insertAll(window, tableName, this.userFunctionToGenerateData)
-        window.webContents.send('app:progress', { log: `Operation Done`})
-        window.webContents.send('app:complete', {})
-        window.webContents.send('app:status', 'Complete')
+        try {
+            window.webContents.send('app:status', 'Running')
+            window.webContents.send('app:progress', { log: `🚀 Starting bulk fake data generation for ${batchConfig.totalRecords} records...`})
+            window.webContents.send('app:progress', { log: `🧪 Using schema: ${batchConfig.tableName}`})
+            window.webContents.send('app:progress', { log: `🗂️ Generating in batches of ${batchConfig.batchSize}`})
+            const { tableName, totalRecords, batchSize, concurrentBatches, logInterval } = batchConfig;
+            this.inserter = new DataInserter(this.DB, totalRecords, batchSize, concurrentBatches, logInterval);
+            await this.inserter.insertAll(window, tableName, this.userFunctionToGenerateData)
+            window.webContents.send('app:progress', { log: `Operation completed successfully.`})
+            window.webContents.send('app:complete', {})
+            window.webContents.send('app:status', 'Complete')
+        } catch (error: any) {
+            window.webContents.send('app:progress', { log: `Operation failed with error: ${error.message}`})
+            window.webContents.send('app:status', `Error - ${error.message}`)
+        }
     }
 
     static stop(window: BrowserWindow) {
