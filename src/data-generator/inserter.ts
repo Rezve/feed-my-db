@@ -21,16 +21,16 @@ export class DataInserter {
       this.shouldStopProcess = true;
     }
   
-    private async insertSingleBatch(users: any[]): Promise<number> {
+    private async insertSingleBatch(tableName: string, rows: any[]): Promise<number> {
       try {
-        await this.db('Users').insert(users);
-        return users.length;
+        await this.db(tableName).insert(rows);
+        return rows.length;
       } catch (error: any) {
         throw error;
       }
     }
   
-    public async insertAll(window: BrowserWindow, userFunctionToGenerateData: any): Promise<number> {
+    public async insertAll(window: BrowserWindow, tableName: string, userFunctionToGenerateData: any): Promise<number> {
       this.shouldStopProcess = false;
 
       const totalBatches = Math.ceil(this.totalRecords / this.batchSize);
@@ -56,9 +56,9 @@ export class DataInserter {
           }
           
           if (recordsToGenerate > 0) {
-            const users = this.generateBatch(recordsToGenerate, userFunctionToGenerateData);
+            const rows = this.generateBatch(recordsToGenerate, userFunctionToGenerateData);
             batchPromises.push(
-              this.insertSingleBatch(users).then(count => {
+              this.insertSingleBatch(tableName, rows).then(count => {
                 insertedRecords += count;
                 if (batchIndex % this.logInterval === 0) {
                   // console.log(`Progress: ${insertedRecords}/${this.totalRecords}`);
@@ -81,8 +81,8 @@ export class DataInserter {
       return Array.from({ length: size }, userFunctionToGenerateData);
     }
   
-    public async getTotalCount(): Promise<number> {
-      const result = await this.db('Users').count('UserId as total').first();
+    public async getTotalCount(tableName: string): Promise<number> {
+      const result = await this.db(tableName).count('* as total').first();
       return Number(result?.total) || 0;
     }
   }

@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'app:progress',
       'app:complete',
       'app:code:result',
+      'app:fetch-tables:result',
     ];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (event, ...args) => callback(...args));
@@ -39,7 +40,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'window:minimize',
       'window:maximize',
       'window:close',
-      'app:code',
+      'app:code'
     ];
 
     if (validChannels.includes(channel)) {

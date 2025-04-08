@@ -1,7 +1,7 @@
 {
-  "name": "mssql-fake-data-generator",
+  "name": "feed-my-db",
   "version": "1.0.0",
-  "description": "Desktop app to generate fake data for mssql",
+  "description": "Desktop app to generate fake data for database",
   "main": "dist/main/main.js",
   "scripts": {
     "start": "electron-forge start",

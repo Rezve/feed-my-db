@@ -4,12 +4,25 @@ import BatchConfig from '../components/BatchConfig';
 import DBConfig from '../components/DBConfig';
 import LiveLog from '../components/LiveLog';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import TableColumnSelectorModal from '../components/TableColumnSelectorModal';
+import { BasicCode } from '../utils/sample-code';
 
 const HomePage: React.FC = () => {
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [tableName, setTableName] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [isCodeConfirmed, setCodeConfirmed] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const [code, setCode] = useState<string>(BasicCode);
+  const handleSaveCode = (tableName: string, generatedCode: any) => {
+    setTableName(tableName);
+    setCode(generatedCode)
+  };
+
+  const handleOpenModal = (flag: boolean) => {
+    setIsModalOpen(flag)
+  }
 
   return (
     <div className="flex h-full">
@@ -25,7 +38,8 @@ const HomePage: React.FC = () => {
         <BatchConfig isConnected={isConnected}
         isRunning={isRunning}
         isCodeConfirmed={isCodeConfirmed}
-        setIsRunning={setIsRunning} />
+        setIsRunning={setIsRunning}
+        tableName={tableName} />
       </div>
       </Panel>
 
@@ -41,7 +55,10 @@ const HomePage: React.FC = () => {
               <GeneratorFunction 
               isConnected={isConnected}
               isCodeConfirmed={isCodeConfirmed}
-              setCodeConfirmed={setCodeConfirmed} />
+              setCodeConfirmed={setCodeConfirmed}
+              openTableConfigModal={handleOpenModal}
+              code={code}
+              setCode={setCode} />
             </div>
           </Panel>
 
@@ -58,6 +75,12 @@ const HomePage: React.FC = () => {
         </PanelGroup>
         </Panel>
       </PanelGroup>
+      <TableColumnSelectorModal 
+        isConnected={isConnected}
+        onSave={handleSaveCode} 
+        isModalOpen={isModalOpen} 
+        setIsModalOpen={setIsModalOpen} 
+      />
     </div>
   );
 };

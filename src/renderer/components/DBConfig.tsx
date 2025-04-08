@@ -71,7 +71,7 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
     if (response.success  == true ) {
         setIsConnected(true)
         addNotification('Collection Established Successfully', 'success')
-        setIsDbConfigOpen(false);
+        // setIsDbConfigOpen(false);
         await saveConfig(dbConfig);
         setIsConnected(true);
         return;
@@ -99,6 +99,24 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
       {/* Section Content (Visible when open) */}
       {isDbConfigOpen && (
         <div className="section-content p-4">
+          <div className="config-grid grid grid-cols-1 mb-5">
+            <div className="config-item flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Database</label>
+              <select
+                // value={selectedDb}
+                // onChange={(e) => onChange(e.target.value)}
+                disabled={isConnected}
+                className={`w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500`}
+              >
+                <option value="">Select Database</option>
+                <option value="sqlserver">SQL Server</option>
+                <option value="azuresql">Azure SQL</option>
+                <option value="mysql">MySQL</option>
+                <option value="postgresql">PostgreSQL</option>
+                <option value="mongodb">MongoDB</option>
+              </select>
+            </div>
+          </div>
           <div className="config-grid grid grid-cols-2 gap-4">
             {/* Host */}
             <div className="config-item flex flex-col">

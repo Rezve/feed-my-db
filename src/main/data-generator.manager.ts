@@ -27,6 +27,9 @@ export class DataGeneratorManager {
             await this.DB.getKnex().raw('SELECT 1;')
             window.webContents.send('app:status', 'Connected')
 
+            const tables = await this.getTablesAndColumns();
+            window.webContents.send('app:fetch-tables:result', { data: tables })
+
             return { success: true }
         } catch (error: any) {
             window.webContents.send('app:status', `Error - ${error.message}`)
@@ -52,8 +55,9 @@ export class DataGeneratorManager {
         
             // Verify the function exists
             this.userFunctionToGenerateData = this.sandbox.exports.generateFakeData;
-            if (typeof this.userFunctionToGenerateData !== 'function') {
+            if (!this.userFunctionToGenerateData || typeof this.userFunctionToGenerateData !== 'function') {
                 window.webContents.send('app:code:result', { error: 'You must export a function named "generateFakeData"' })
+                return;
             }
 
             // Generate data once and reply
@@ -71,9 +75,9 @@ export class DataGeneratorManager {
             return;
         }
         window.webContents.send('app:status', 'Running')
-        const { totalRecords, batchSize, concurrentBatches, logInterval } = batchConfig;
+        const { tableName, totalRecords, batchSize, concurrentBatches, logInterval } = batchConfig;
         this.inserter = new DataInserter(this.DB, totalRecords, batchSize, concurrentBatches, logInterval);
-        await this.inserter.insertAll(window, this.userFunctionToGenerateData)
+        await this.inserter.insertAll(window, tableName, this.userFunctionToGenerateData)
         window.webContents.send('app:progress', { log: `Operation Done`})
         window.webContents.send('app:complete', {})
         window.webContents.send('app:status', 'Complete')
@@ -87,5 +91,36 @@ export class DataGeneratorManager {
 
     static async sleep(sec: number) {
         return new Promise(resolve => setTimeout(resolve, sec * 1000));
+    }
+
+    static async getTablesAndColumns() {
+        const rows = await this.DB.getKnex()
+          .select(
+            't.name as tableName',
+            'c.name as columnName',
+            'ty.name as dataType',
+            'c.max_length as maxLength'
+          )
+          .from('sys.columns as c')
+          .join('sys.tables as t', 'c.object_id', 't.object_id')
+          .join('sys.types as ty', 'c.user_type_id', 'ty.user_type_id')
+          .orderBy(['t.name', 'c.column_id']);
+      
+        // Transform rows into the desired structure
+        const result: Record<string, any> = {};
+      
+        for (const row of rows) {
+          if (!result[row.tableName]) {
+            result[row.tableName] = { name: row.tableName, columns: [] };
+          }
+      
+          result[row.tableName].columns.push({
+            name: row.columnName,
+            type: row.dataType,
+            maxLength: row.maxLength === -1 ? 'MAX' : row.maxLength
+          });
+        }
+      
+        return Object.values(result);
     }
 }

@@ -8,6 +8,7 @@ interface LogEntry {
   }
 
 export interface BatchConfig {
+  tableName: string;
   totalRecords: number;
   batchSize: number;
   concurrentBatches: number;
@@ -16,12 +17,13 @@ export interface BatchConfig {
 
 interface BatchConfigProps {
   isConnected: boolean;
+  tableName: string;
   isRunning: boolean;
   isCodeConfirmed: boolean;
   setIsRunning: (flag: boolean) => void;
 }
 
-const BatchConfig: React.FC<BatchConfigProps> = ({ isConnected, isRunning, isCodeConfirmed, setIsRunning }) => {
+const BatchConfig: React.FC<BatchConfigProps> = ({ isConnected, isRunning, isCodeConfirmed, setIsRunning, tableName }) => {
 
     const [isConfigOpen, setIsConfigOpen] = useState(true);
     const [totalRecords, setTotalRecords] = useState<number>(1000);
@@ -31,6 +33,7 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isConnected, isRunning, isCod
 
     const handleStart = async () => {      
       const batchConfig: BatchConfig = {
+        tableName,
         totalRecords,
         batchSize,
         concurrentBatches,
@@ -63,13 +66,6 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isConnected, isRunning, isCod
           {/* Overlay if not ready */}
           {!isCodeConfirmed && (
             <div className="absolute inset-0 bg-gray-200 bg-opacity-75 flex items-center justify-center z-10">
-              <div className="bg-white px-4 py-2 rounded-md shadow-sm border border-gray-300">
-                <p className="text-gray-600 text-sm font-medium">
-                  {!isConnected
-                    ? "Please connect to the database."
-                    : "Please confirm a generator function."}
-                </p>
-              </div>
           </div>
           )}
           {/* Section Header */}
@@ -87,6 +83,17 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isConnected, isRunning, isCod
           {isConfigOpen && (
             <div className="section-content p-4">
               <div className="config-grid grid grid-cols-2 gap-4">
+                {/* Table Name */}
+                <div className="config-item flex flex-col">
+                  <label className="text-sm font-medium text-gray-700 mb-1">Selected Table</label>
+                  <input
+                    type="text"
+                    value={tableName}
+                    disabled={true}
+                    readOnly={true}
+                    className={`w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500`}
+                  />
+                </div>
                 {/* Total Records */}
                 <div className="config-item flex flex-col">
                   <label className="text-sm font-medium text-gray-700 mb-1">Total Records</label>
@@ -125,11 +132,11 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isConnected, isRunning, isCod
       
                 {/* Log Interval */}
                 <div className="config-item flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Log Interval (ms)</label>
+                  <label className="text-sm font-medium text-gray-700 mb-1">Log Interval</label>
                   <input
                     type="number"
                     value={logInterval}
-                    onChange={(e) => setLogInterval(Math.max(100, parseInt(e.target.value)))}
+                    onChange={(e) => setLogInterval(Math.max(1, parseInt(e.target.value)))}
                     disabled={isRunning}
                     className={`w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500`}
                   />
