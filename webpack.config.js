@@ -13,14 +13,14 @@ module.exports = {
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
-        use: 'ts-loader'
+        use: 'ts-loader',
       },
       {
         test: /\.css$/,
         exclude: /node_modules/,
         use: [
-          'style-loader',   // Injects CSS into the DOM
-          'css-loader',     // Resolves CSS imports
+          'style-loader', // Injects CSS into the DOM
+          'css-loader', // Resolves CSS imports
           'postcss-loader', // Processes CSS with PostCSS (Tailwind)
         ],
       },

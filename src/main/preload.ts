@@ -10,7 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'storage:decrypt',
       'storage:saveConfig',
       'storage:loadConfig',
-      'app:start'
+      'app:start',
     ];
 
     if (validChannels.includes(channel)) {
@@ -37,15 +37,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   start: (channel: string, batchConfig: BatchConfig) => ipcRenderer.send(channel, batchConfig),
   stop: (channel: string) => ipcRenderer.send(channel),
   send: (channel: string, data: any) => {
-    const validChannels = [
-      'window:minimize',
-      'window:maximize',
-      'window:close',
-      'app:code'
-    ];
+    const validChannels = ['window:minimize', 'window:maximize', 'window:close', 'app:code'];
 
     if (validChannels.includes(channel)) {
-      ipcRenderer.send(channel, data)
+      ipcRenderer.send(channel, data);
     }
-  }
+  },
 });

@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
 interface TableColumnSelectorModalProps {
-    isConnected: boolean;
-    isModalOpen: boolean;
-    onSave: (tableName: string, code: string) => void
-    setIsModalOpen: (flag: boolean) => void
+  isConnected: boolean;
+  isModalOpen: boolean;
+  onSave: (tableName: string, code: string) => void;
+  setIsModalOpen: (flag: boolean) => void;
 }
 
-const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({ isConnected, onSave, setIsModalOpen, isModalOpen }) => {
+const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
+  isConnected,
+  onSave,
+  setIsModalOpen,
+  isModalOpen,
+}) => {
   const [selectedTable, setSelectedTable] = useState('');
   const [tables, setTables] = useState([] as any);
   const [columns, setColumns] = useState([] as any);
@@ -15,16 +20,16 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({ isC
 
   // Mock database fetch (replace with real DB call)
   useEffect(() => {
-    window.electronAPI.on("app:fetch-tables:result", (result) => {
-        if (result.error) {
+    window.electronAPI.on('app:fetch-tables:result', (result) => {
+      if (result.error) {
         //   setError(result.error);
-        } else {
-            setTables(result.data);
-        }
-      });
+      } else {
+        setTables(result.data);
+      }
+    });
 
     if (isConnected) {
-        setIsModalOpen(true);
+      setIsModalOpen(true);
     } else {
       setIsModalOpen(false);
       setSelectedTable('');
@@ -101,19 +106,14 @@ function generateFakeData() {
         {/* Modal Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">Configure Fake Data</h2>
-          <button
-            className="text-gray-500 hover:text-gray-700"
-            onClick={() => setIsModalOpen(false)}
-          >
+          <button className="text-gray-500 hover:text-gray-700" onClick={() => setIsModalOpen(false)}>
             ✕
           </button>
         </div>
 
         {/* Table Selector */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select Table
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Select Table</label>
           <select
             value={selectedTable}
             onChange={handleTableChange}
@@ -134,10 +134,18 @@ function generateFakeData() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-gray-200">
-                  <th className="p-2 text-left text-sm font-semibold text-gray-800 border-b border-gray-300">Table Column</th>
-                  <th className="p-2 text-left text-sm font-semibold text-gray-800 border-b border-gray-300">Data Type</th>
-                  <th className="p-2 text-left text-sm font-semibold text-gray-800 border-b border-gray-300">Max Length</th>
-                  <th className="p-2 text-left text-sm font-semibold text-gray-800 border-b border-gray-300">Faker Function</th>
+                  <th className="p-2 text-left text-sm font-semibold text-gray-800 border-b border-gray-300">
+                    Table Column
+                  </th>
+                  <th className="p-2 text-left text-sm font-semibold text-gray-800 border-b border-gray-300">
+                    Data Type
+                  </th>
+                  <th className="p-2 text-left text-sm font-semibold text-gray-800 border-b border-gray-300">
+                    Max Length
+                  </th>
+                  <th className="p-2 text-left text-sm font-semibold text-gray-800 border-b border-gray-300">
+                    Faker Function
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -153,7 +161,7 @@ function generateFakeData() {
                         className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                       >
                         <option value="">-- Select Faker Function --</option>
-                        {fakerOptions.map(option => (
+                        {fakerOptions.map((option) => (
                           <option key={option.value} value={option.value}>
                             {option.label}
                           </option>

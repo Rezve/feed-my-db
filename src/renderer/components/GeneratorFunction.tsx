@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 
 interface GeneratorFunctionProps {
@@ -10,7 +10,14 @@ interface GeneratorFunctionProps {
   openTableConfigModal: (flag: boolean) => void;
 }
 
-const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCodeConfirmed, setCodeConfirmed, openTableConfigModal, code, setCode }) => {
+const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
+  isConnected,
+  isCodeConfirmed,
+  setCodeConfirmed,
+  openTableConfigModal,
+  code,
+  setCode,
+}) => {
   const [isEditorOpen, setIsEditorOpen] = useState(true);
   const [sampleData, setSampleData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,7 +26,7 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    window.electronAPI.on("app:code:result", (result) => {
+    window.electronAPI.on('app:code:result', (result) => {
       if (result.error) {
         setError(result.error);
       } else {
@@ -31,20 +38,20 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
 
   const handleRunCode = () => {
     setError(null);
-    window.electronAPI.send("app:code", code);
+    window.electronAPI.send('app:code', code);
   };
 
   const handleColumnConfiguration = () => {
     openTableConfigModal(true);
-  }
+  };
 
   const handleCodeConfirmation = () => {
     setCodeConfirmed(true);
     setIsModalOpen(false);
     setSampleData(null);
-    setConfirmButtonText('Confirmed')
+    setConfirmButtonText('Confirmed');
     setHasCodeChanged(false);
-  }
+  };
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -54,13 +61,12 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
   return (
     <div
       className={`editor-section ${
-        isEditorOpen ? "open" : "closed"
+        isEditorOpen ? 'open' : 'closed'
       } bg-white border border-gray-300 rounded-md shadow-sm relative`}
     >
       {/* Overlay if not connected */}
       {!isConnected && (
-        <div className="absolute inset-0 bg-gray-200 bg-opacity-75 flex items-center justify-center z-10">
-        </div>
+        <div className="absolute inset-0 bg-gray-200 bg-opacity-75 flex items-center justify-center z-10"></div>
       )}
 
       {/* Section Header */}
@@ -70,7 +76,7 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
           className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
           onClick={() => setIsEditorOpen(!isEditorOpen)}
         >
-          {isEditorOpen ? "-" : "+"}
+          {isEditorOpen ? '-' : '+'}
         </button>
       </div>
 
@@ -82,8 +88,8 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
               height="40vh"
               defaultLanguage="javascript"
               value={code}
-              onChange={(value) => { 
-                setCode(value || "")
+              onChange={(value) => {
+                setCode(value || '');
                 if (isCodeConfirmed && !hasCodeChanged) {
                   setConfirmButtonText('Re-run & Validate');
                   setHasCodeChanged(true);
@@ -94,8 +100,8 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
                 scrollBeyondLastLine: false,
                 fontSize: 14,
                 fontFamily: "'Consolas', 'Courier New', monospace",
-                lineNumbers: "on",
-                renderLineHighlight: "all",
+                lineNumbers: 'on',
+                renderLineHighlight: 'all',
                 padding: { top: 8, bottom: 8 },
               }}
             />
@@ -106,7 +112,7 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
             {/* Run/Validate Button */}
             <button
               className={`px-4 py-2 bg-blue-600 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                ${isCodeConfirmed && !hasCodeChanged ? 'bg-gray-600 hover:bg-gray-700': 'bg-blue-600 hover:bg-blue-700'}`}
+                ${isCodeConfirmed && !hasCodeChanged ? 'bg-gray-600 hover:bg-gray-700' : 'bg-blue-600 hover:bg-blue-700'}`}
               onClick={handleRunCode}
               disabled={isCodeConfirmed && !hasCodeChanged}
             >
@@ -124,11 +130,7 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
           </div>
 
           {/* Error Message */}
-          {error && (
-            <div className="text-red-600 text-sm">
-              Error: {error}
-            </div>
-          )}
+          {error && <div className="text-red-600 text-sm">Error: {error}</div>}
         </div>
       )}
 
@@ -136,24 +138,20 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
           <div className="bg-white p-6 rounded-md shadow-lg max-w-lg w-full">
-            <h3 className="flex justify-between items-center text-lg font-semibold mb-4">Review Generated Data
-              <button
-                className="text-gray-500 hover:text-gray-700"
-                onClick={() => closeModal()}
-              >
+            <h3 className="flex justify-between items-center text-lg font-semibold mb-4">
+              Review Generated Data
+              <button className="text-gray-500 hover:text-gray-700" onClick={() => closeModal()}>
                 ✕
               </button>
             </h3>
-            
+
             {sampleData && (
               <table className="w-full border-collapse border border-gray-300">
                 <tbody>
                   {Object.entries(sampleData).map(([key, value]) => (
                     <tr key={key} className="border-b border-gray-300">
                       <td className="p-2 font-semibold border-r border-gray-300">{key}</td>
-                      <td className="p-2">
-                        {value instanceof Date ? value.toISOString() : String(value)}
-                      </td>
+                      <td className="p-2">{value instanceof Date ? value.toISOString() : String(value)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -176,6 +174,6 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
       )}
     </div>
   );
-}
+};
 
 export default GeneratorFunction;

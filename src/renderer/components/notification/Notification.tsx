@@ -40,12 +40,11 @@ export const Notification: React.FC<NotificationProps> = ({ message, type, onClo
   };
 
   return (
-    <div className={`notification ${getTypeStyles()} border-l-4 p-4 mb-4 rounded shadow-md flex justify-between items-center`}>
+    <div
+      className={`notification ${getTypeStyles()} border-l-4 p-4 mb-4 rounded shadow-md flex justify-between items-center`}
+    >
       <span>{message}</span>
-      <button 
-        onClick={onClose}
-        className="ml-4 text-sm font-medium hover:text-gray-900 focus:outline-none"
-      >
+      <button onClick={onClose} className="ml-4 text-sm font-medium hover:text-gray-900 focus:outline-none">
         ×
       </button>
     </div>

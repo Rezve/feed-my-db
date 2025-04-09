@@ -13,7 +13,7 @@ function generateFakeData() {
 }
 
 // Tip: Click "Run & Validate" to test and confirm your code!
-`
+`;
 export const AdvancedCode = `// Welcome to the Generator Function Editor!
 // This is your space to create custom fake data for your application.
 
@@ -74,4 +74,4 @@ function generateFakeData() {
 // - Check out Faker’s API for more options (e.g., faker.person, faker.internet, faker.date).
 // - Keep 'generateFakeData' fast since it runs for each item in the output array.
 // - Test your code with the "Run & Validate" button to see a sample!
-`
+`;

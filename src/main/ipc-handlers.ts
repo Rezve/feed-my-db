@@ -1,12 +1,12 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow } from 'electron';
 import { ipcMain } from 'electron';
-import { DataGeneratorManager } from "./data-generator.manager";
-import { getKey } from "./setup-keychain";
-import { decrypt, encrypt } from "./crypto";
-import { loadConfig, saveConfig } from "./storage";
+import { DataGeneratorManager } from './data-generator.manager';
+import { getKey } from './setup-keychain';
+import { decrypt, encrypt } from './crypto';
+import { loadConfig, saveConfig } from './storage';
 
 function registerHandlers(mainWindow: BrowserWindow) {
-  ipcMain.handle('config:db',  async (event, dbConfig) => DataGeneratorManager.setDBConfig(mainWindow, event, dbConfig))
+  ipcMain.handle('config:db', async (event, dbConfig) => DataGeneratorManager.setDBConfig(mainWindow, event, dbConfig));
 
   ipcMain.handle('storage:retrieve-key', async (event, account) => {
     return await getKey(account);
@@ -30,19 +30,19 @@ function registerHandlers(mainWindow: BrowserWindow) {
 
   ipcMain.on('app:start', (event, batchConfig) => {
     DataGeneratorManager.start(mainWindow, batchConfig);
-  })
+  });
 
   ipcMain.on('app:stop', () => {
     DataGeneratorManager.stop(mainWindow);
-  })
+  });
 
-  ipcMain.on('app:code', (event, code) => {    
+  ipcMain.on('app:code', (event, code) => {
     DataGeneratorManager.setGeneratorFunction(mainWindow, code);
-  })
+  });
 
   ipcMain.on('window:minimize', () => mainWindow.minimize());
   ipcMain.on('window:maximize', () => (mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize()));
   ipcMain.on('window:close', () => mainWindow.close());
 }
 
-export { registerHandlers }
+export { registerHandlers };

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { NotificationContainer } from './NotificationContainer'
+import { NotificationContainer } from './NotificationContainer';
 import { NotificationType } from './Notification';
 
 interface Notification {
@@ -24,18 +24,21 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   const addNotification = (message: string, type: NotificationType = 'success') => {
     const id = Date.now();
-    setNotifications(prev => [...prev, { id, message, type }]);
-    
+    setNotifications((prev) => [...prev, { id, message, type }]);
+
     setTimeout(() => {
       removeNotification(id);
     }, 5000);
   };
 
   const removeNotification = (id: number) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
+    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
   };
 
-  const value: NotificationContextType = { addNotification, removeNotification };
+  const value: NotificationContextType = {
+    addNotification,
+    removeNotification,
+  };
 
   return (
     <NotificationContext.Provider value={value}>
