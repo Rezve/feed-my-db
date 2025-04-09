@@ -1,4 +1,3 @@
-import { ipcRenderer } from 'electron';
 import React, { useEffect, useState } from 'react';
 
 interface ProgressBarProps {

@@ -12,9 +12,6 @@ export interface ElectronAPI {
   start: (channel: string, batchConfig: BatchConfig) => void;
   stop: (channel: string) => void;
   send: (channel: string, data?: any) => void;
-  // minimize: () => void;
-  // maximize: () => void;
-  // close: () => void;
 }
 
 export {};

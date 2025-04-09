@@ -19,7 +19,7 @@ export class IPCService {
 
     static async saveDBConfig(config: any) {
       // find existing key for encryption,  if not found it will generate one
-      let key = await window.electronAPI.invoke('storage:retrieve-key', 'encryptionKey');
+      const key = await window.electronAPI.invoke('storage:retrieve-key', 'encryptionKey');
       if (!key) {
         throw new Error('Error: Unable to create encryptionKey')
       }
@@ -39,7 +39,7 @@ export class IPCService {
       const config = await window.electronAPI.invoke('storage:loadConfig', '') as any
 
       if (config?.encryptedPassword) {
-        let key = await window.electronAPI.invoke('storage:retrieve-key', 'encryptionKey');
+        const key = await window.electronAPI.invoke('storage:retrieve-key', 'encryptionKey');
         config.password = await window.electronAPI.invoke('storage:decrypt', { encryptedText: config?.encryptedPassword?.encryptedData, key, iv: config?.encryptedPassword?.iv })
         delete config.encryptedPassword;
       }

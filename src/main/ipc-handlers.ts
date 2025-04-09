@@ -1,7 +1,7 @@
 import { BrowserWindow } from "electron";
 import { ipcMain } from 'electron';
 import { DataGeneratorManager } from "./data-generator.manager";
-import { getKey, storeKey } from "./setup-keychain";
+import { getKey } from "./setup-keychain";
 import { decrypt, encrypt } from "./crypto";
 import { loadConfig, saveConfig } from "./storage";
 
@@ -24,7 +24,7 @@ function registerHandlers(mainWindow: BrowserWindow) {
     return await saveConfig(config);
   });
 
-  ipcMain.handle('storage:loadConfig', async (event) => {
+  ipcMain.handle('storage:loadConfig', async () => {
     return await loadConfig();
   });
 
@@ -32,7 +32,7 @@ function registerHandlers(mainWindow: BrowserWindow) {
     DataGeneratorManager.start(mainWindow, batchConfig);
   })
 
-  ipcMain.on('app:stop', (event) => {
+  ipcMain.on('app:stop', () => {
     DataGeneratorManager.stop(mainWindow);
   })
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './styles/App.css';
 import HomePage from './pages/HomePage';
 import { NotificationProvider } from './components/notification/NotificationContext';

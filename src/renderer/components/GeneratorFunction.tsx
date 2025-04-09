@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import MonacoEditor from '@monaco-editor/react';
-import { AdvancedCode, BasicCode } from "../utils/sample-code";
 
 interface GeneratorFunctionProps {
   code: string;
@@ -15,7 +14,6 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
   const [isEditorOpen, setIsEditorOpen] = useState(true);
   const [sampleData, setSampleData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAdvanceCodeLoaded, setAdvanceCodeLoaded] = useState(false);
   const [hasCodeChanged, setHasCodeChanged] = useState(false);
   const [confirmButtonText, setConfirmButtonText] = useState('Run & Validate');
   const [error, setError] = useState(null);
@@ -35,12 +33,6 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({ isConnected, isCo
     setError(null);
     window.electronAPI.send("app:code", code);
   };
-
-  const handleLoadAdvanced = () => {
-    setCode(isAdvanceCodeLoaded ? BasicCode: AdvancedCode);
-    setError(null);
-    setAdvanceCodeLoaded(!isAdvanceCodeLoaded)
-  }
 
   const handleColumnConfiguration = () => {
     openTableConfigModal(true);

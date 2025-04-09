@@ -26,7 +26,7 @@ export async function storeKey(account: string) {
 
 export async function getKey(account: string) {
     try {
-        let key = await keytar.getPassword(SERVICE_NAME, account);
+        const key = await keytar.getPassword(SERVICE_NAME, account);
         if (key) {
             console.log(`Key retrieved for account: ${account}`);
             return Buffer.from(key, 'hex');

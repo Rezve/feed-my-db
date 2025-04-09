@@ -1,6 +1,6 @@
-const { app } = require('electron');
-const fs = require('fs').promises;
-const path = require('path');
+import { app } from 'electron';
+import fs from 'fs/promises';
+import path from 'path';
 
 const configPath = path.join(app.getPath('userData'), 'config.json');
 

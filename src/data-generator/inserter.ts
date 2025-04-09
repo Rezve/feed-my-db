@@ -22,12 +22,8 @@ export class DataInserter {
     }
   
     private async insertSingleBatch(tableName: string, rows: any[]): Promise<number> {
-      try {
         await this.db(tableName).insert(rows);
         return rows.length;
-      } catch (error: any) {
-        throw error;
-      }
     }
   
     public async insertAll(window: BrowserWindow, tableName: string, userFunctionToGenerateData: any): Promise<number> {

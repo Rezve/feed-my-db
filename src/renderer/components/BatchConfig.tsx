@@ -1,11 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { IPCService } from "../services/ipc-service";
-
-interface LogEntry {
-    id: number;
-    timestamp: string;
-    message: string;
-  }
 
 export interface BatchConfig {
   tableName: string;
@@ -23,7 +17,7 @@ interface BatchConfigProps {
   setIsRunning: (flag: boolean) => void;
 }
 
-const BatchConfig: React.FC<BatchConfigProps> = ({ isConnected, isRunning, isCodeConfirmed, setIsRunning, tableName }) => {
+const BatchConfig: React.FC<BatchConfigProps> = ({ isRunning, isCodeConfirmed, setIsRunning, tableName }) => {
 
     const [isConfigOpen, setIsConfigOpen] = useState(true);
     const [totalRecords, setTotalRecords] = useState<number>(1000);
@@ -50,7 +44,7 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isConnected, isRunning, isCod
     };
 
     useEffect(() => {
-        const handleProgress = (data: any) => {
+        const handleProgress = () => {
             setIsRunning(false);
         };
         window.electronAPI.on('app:complete', handleProgress);
