@@ -19,25 +19,29 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
   setCode,
 }) => {
   const [isEditorOpen, setIsEditorOpen] = useState(true);
-  const [sampleData, setSampleData] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [sampleData, setSampleData] = useState<any[] | null>(null);
   const [hasCodeChanged, setHasCodeChanged] = useState(false);
-  const [confirmButtonText, setConfirmButtonText] = useState('Run & Validate');
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     window.electronAPI.on('app:code:result', (result) => {
       if (result.error) {
         setError(result.error);
+        setSampleData(null);
       } else {
-        setSampleData(result[0]);
-        setIsModalOpen(true);
+        setSampleData(Array.isArray(result) ? result : [result]);
+        setError(null);
+
+        setCodeConfirmed(true);
+        // setConfirmButtonText('Confirmed');
+        setHasCodeChanged(false);
       }
     });
   }, []);
 
   const handleRunCode = () => {
     setError(null);
+    setSampleData(null);
     window.electronAPI.send('app:code', code);
   };
 
@@ -45,18 +49,23 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
     openTableConfigModal(true);
   };
 
-  const handleCodeConfirmation = () => {
-    setCodeConfirmed(true);
-    setIsModalOpen(false);
-    setSampleData(null);
-    setConfirmButtonText('Confirmed');
-    setHasCodeChanged(false);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSampleData(null);
-  };
+  const renderTable = (data: any, index: number) => (
+    <div key={index} className="mb-4">
+      <h3 className="text-sm font-semibold mb-2">Table {index + 1}</h3>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse border border-gray-300">
+          <tbody>
+            {Object.entries(data).map(([key, value]) => (
+              <tr key={key} className="border-b border-gray-300">
+                <td className="p-2 font-semibold border-r border-gray-300">{key}</td>
+                <td className="p-2">{value instanceof Date ? value.toISOString() : String(value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 
   return (
     <div
@@ -64,12 +73,10 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
         isEditorOpen ? 'open' : 'closed'
       } bg-white border border-gray-300 rounded-md shadow-sm relative`}
     >
-      {/* Overlay if not connected */}
       {!isConnected && (
         <div className="absolute inset-0 bg-gray-200 bg-opacity-75 flex items-center justify-center z-10"></div>
       )}
 
-      {/* Section Header */}
       <div className="section-header flex items-center justify-between p-2 bg-gray-200 border-b border-gray-300">
         <h2 className="text-sm font-semibold text-gray-800">Generator Function</h2>
         <button
@@ -80,95 +87,60 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
         </button>
       </div>
 
-      {/* Section Content (Visible when open) */}
       {isEditorOpen && (
-        <div className="section-content p-4 flex flex-col gap-4">
-          <div className="editor-container bg-white border border-gray-300 rounded-md shadow-sm overflow-hidden">
-            <MonacoEditor
-              height="40vh"
-              defaultLanguage="javascript"
-              value={code}
-              onChange={(value) => {
-                setCode(value || '');
-                if (isCodeConfirmed && !hasCodeChanged) {
-                  setConfirmButtonText('Re-run & Validate');
-                  setHasCodeChanged(true);
-                }
-              }}
-              options={{
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                fontSize: 14,
-                fontFamily: "'Consolas', 'Courier New', monospace",
-                lineNumbers: 'on',
-                renderLineHighlight: 'all',
-                padding: { top: 8, bottom: 8 },
-              }}
-            />
-          </div>
+        <div className="section-content p-4 flex gap-4">
+          {/* Editor */}
+          <div className="w-1/2 flex flex-col gap-4">
+            <div className="editor-container bg-white border border-gray-300 rounded-md shadow-sm overflow-hidden">
+              <MonacoEditor
+                height="40vh"
+                defaultLanguage="javascript"
+                value={code}
+                onChange={(value) => {
+                  setCode(value || '');
+                  if (isCodeConfirmed && !hasCodeChanged) {
+                    setHasCodeChanged(true);
+                  }
+                }}
+                options={{
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14,
+                  fontFamily: "'Consolas', 'Courier New', monospace",
+                  lineNumbers: 'on',
+                  renderLineHighlight: 'all',
+                  padding: { top: 8, bottom: 8 },
+                }}
+              />
+            </div>
 
-          {/* Buttons and Error Display */}
-          <div className="flex items-center justify-between">
-            {/* Run/Validate Button */}
-            <button
-              className={`px-4 py-2 bg-blue-600 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                ${isCodeConfirmed && !hasCodeChanged ? 'bg-gray-600 hover:bg-gray-700' : 'bg-blue-600 hover:bg-blue-700'}`}
-              onClick={handleRunCode}
-              disabled={isCodeConfirmed && !hasCodeChanged}
-            >
-              {confirmButtonText}
-            </button>
-
-            {/* Load Advanced Example Button */}
-            <button
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-              onClick={handleColumnConfiguration}
-            >
-              {/* { isAdvanceCodeLoaded ? 'Load Basic Example': 'Load Advanced Example'} */}
-              Configure Table & Column
-            </button>
-          </div>
-
-          {/* Error Message */}
-          {error && <div className="text-red-600 text-sm">Error: {error}</div>}
-        </div>
-      )}
-
-      {/* Modal for Sample Data */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
-          <div className="bg-white p-6 rounded-md shadow-lg max-w-lg w-full">
-            <h3 className="flex justify-between items-center text-lg font-semibold mb-4">
-              Review Generated Data
-              <button className="text-gray-500 hover:text-gray-700" onClick={() => closeModal()}>
-                ✕
+            <div className="flex items-center ">
+              <button
+                className={`px-4 py-2 bg-blue-600 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                  ${isCodeConfirmed && !hasCodeChanged ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                onClick={handleRunCode}
+                disabled={isCodeConfirmed && !hasCodeChanged}
+              >
+                Run
               </button>
-            </h3>
+              <button
+                className="px-4 ml-5 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                onClick={handleColumnConfiguration}
+              >
+                Change Table
+              </button>
+            </div>
+          </div>
 
-            {sampleData && (
-              <table className="w-full border-collapse border border-gray-300">
-                <tbody>
-                  {Object.entries(sampleData).map(([key, value]) => (
-                    <tr key={key} className="border-b border-gray-300">
-                      <td className="p-2 font-semibold border-r border-gray-300">{key}</td>
-                      <td className="p-2">{value instanceof Date ? value.toISOString() : String(value)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* Preview/Error Panel */}
+          <div className="w-1/2 bg-gray-50 p-4 rounded-md border border-gray-300 h-[40vh] overflow-y-auto">
+            {error ? (
+              <div className="text-red-600 text-sm">Error: {error}</div>
+            ) : sampleData ? (
+              <div>{sampleData.map((data, index) => renderTable(data, index))}</div>
+            ) : (
+              <div className="text-gray-500 text-sm">Run code to see preview</div>
             )}
-            <button
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200"
-              onClick={handleCodeConfirmation}
-            >
-              Confirm
-            </button>
-            {/* <button
-              className="mt-4 ml-5 px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200"
-              onClick={closeModal}
-            >
-              Close
-            </button> */}
           </div>
         </div>
       )}

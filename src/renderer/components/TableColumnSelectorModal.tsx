@@ -105,7 +105,7 @@ function generateFakeData() {
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Configure Fake Data</h2>
+          <h2 className="text-lg font-semibold text-gray-800">Define Data Schema</h2>
           <button className="text-gray-500 hover:text-gray-700" onClick={() => setIsModalOpen(false)}>
             ✕
           </button>
