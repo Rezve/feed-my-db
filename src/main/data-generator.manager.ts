@@ -4,6 +4,9 @@ import { BrowserWindow } from 'electron';
 import { DataInserter } from '../data-generator/inserter';
 import vm from 'vm';
 import { faker } from '@faker-js/faker';
+import { saveConfig } from './storage';
+import { getKey } from './setup-keychain';
+import { encrypt } from './crypto';
 
 export class DataGeneratorManager {
   static dbConfig = {};
@@ -29,10 +32,21 @@ export class DataGeneratorManager {
       const tables = await this.getTablesAndColumns();
       window.webContents.send('app:fetch-tables:result', { data: tables });
 
-      return { success: true };
+      // save user db configuration
+      if (dbConfig.password) {
+        const key = await getKey('encryptionKey');
+        if (!key) {
+          return;
+        }
+        dbConfig.encryptedPassword = encrypt(dbConfig.password, key);
+        delete dbConfig.password;
+      }
+      await saveConfig(dbConfig);
+
+      window.webContents.send('app:connect:result', { success: true });
     } catch (error: any) {
       window.webContents.send('app:status', `Error - ${error.message}`);
-      return { success: false, message: error.message };
+      window.webContents.send('app:connect:result', { success: false, message: error.message });
     }
   }
 

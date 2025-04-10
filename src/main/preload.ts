@@ -3,15 +3,7 @@ import { BatchConfig } from '../renderer/components/BatchConfig';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   invoke: (channel: string, data: any) => {
-    const validChannels = [
-      'config:db',
-      'storage:retrieve-key',
-      'storage:encrypt',
-      'storage:decrypt',
-      'storage:saveConfig',
-      'storage:loadConfig',
-      'app:start',
-    ];
+    const validChannels = ['storage:loadConfig', 'app:start'];
 
     if (validChannels.includes(channel)) {
       return ipcRenderer.invoke(channel, data);
@@ -24,6 +16,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'app:log',
       'app:progress',
       'app:complete',
+      'app:connect:result',
       'app:code:result',
       'app:fetch-tables:result',
     ];
@@ -37,7 +30,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   start: (channel: string, batchConfig: BatchConfig) => ipcRenderer.send(channel, batchConfig),
   stop: (channel: string) => ipcRenderer.send(channel),
   send: (channel: string, data: any) => {
-    const validChannels = ['window:minimize', 'window:maximize', 'window:close', 'app:code'];
+    const validChannels = ['window:minimize', 'window:maximize', 'window:close', 'app:code', 'app:connect'];
 
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);

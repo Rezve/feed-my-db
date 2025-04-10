@@ -36,10 +36,6 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
     setDbConfig((prev) => ({ ...prev, [field]: value }));
   };
 
-  const saveConfig = async (dbConfig: any) => {
-    await IPCService.saveDBConfig(dbConfig);
-  };
-
   useEffect(() => {
     async function loadData() {
       const config = await IPCService.loadConfig();
@@ -60,20 +56,21 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
       setDbConfig(config as any);
     }
 
+    window.electronAPI.on('app:connect:result', async (result) => {
+      if (result.success == true) {
+        setIsConnected(true);
+        addNotification('Collection Established Successfully', 'success');
+        // setIsDbConfigOpen(false);
+        return;
+      }
+      addNotification(`Error: ${result.message}`, 'error');
+    });
+
     loadData();
   }, []);
 
-  const connect = async () => {
-    const response = (await IPCService.setDBConfig(dbConfig)) as any;
-    if (response.success == true) {
-      setIsConnected(true);
-      addNotification('Collection Established Successfully', 'success');
-      // setIsDbConfigOpen(false);
-      await saveConfig(dbConfig);
-      setIsConnected(true);
-      return;
-    }
-    addNotification(`Error: ${response.message}`, 'error');
+  const handleConnect = () => {
+    IPCService.connectToDatabase(dbConfig);
   };
 
   return (
@@ -208,7 +205,7 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
                     : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
                 }`}
                 disabled={isConnected}
-                onClick={connect}
+                onClick={handleConnect}
               >
                 {isConnected ? 'Connected' : 'Connect'}
               </button>
