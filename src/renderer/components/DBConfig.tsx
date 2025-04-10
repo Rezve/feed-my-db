@@ -19,6 +19,7 @@ interface DBConfigProps {
 
 const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any) => {
   const [isDbConfigOpen, setIsDbConfigOpen] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { addNotification } = useNotification();
 
   // Database configuration state
@@ -57,6 +58,7 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
     }
 
     window.electronAPI.on('app:connect:result', async (result) => {
+      setIsLoading(false);
       if (result.success == true) {
         setIsConnected(true);
         addNotification('Collection Established Successfully', 'success');
@@ -70,6 +72,7 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
   }, []);
 
   const handleConnect = () => {
+    setIsLoading(true);
     IPCService.connectToDatabase(dbConfig);
   };
 
@@ -199,15 +202,24 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
             {/* Connect Button */}
             <div className="config-item flex items-end">
               <button
-                className={`w-full py-2 px-4 text-sm font-semibold text-white rounded-md shadow-sm transition-colors duration-200 ${
+                className={`w-full py-2 px-4 text-sm font-semibold text-white rounded-md shadow-sm transition-colors duration-200 relative ${
                   isConnected
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
                 }`}
-                disabled={isConnected}
+                disabled={isConnected || isLoading}
                 onClick={handleConnect}
               >
-                {isConnected ? 'Connected' : 'Connect'}
+                <span className={`${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+                  {isConnected ? 'Connected' : 'Connect'}
+                </span>
+
+                {isLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Connecting...</span>
+                  </div>
+                )}
               </button>
             </div>
           </div>

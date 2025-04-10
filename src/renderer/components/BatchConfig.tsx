@@ -23,6 +23,7 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isRunning, isCodeConfirmed, s
   const [batchSize, setBatchSize] = useState<number>(100);
   const [concurrentBatches, setConcurrentBatches] = useState<number>(2);
   const [logInterval, setLogInterval] = useState<number>(1000);
+  const [showReadyAnimation, setShowReadyAnimation] = useState(false);
 
   const handleStart = async () => {
     const batchConfig: BatchConfig = {
@@ -49,11 +50,20 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isRunning, isCodeConfirmed, s
     window.electronAPI.on('app:complete', handleProgress);
   }, []);
 
+  useEffect(() => {
+    if (isCodeConfirmed && !showReadyAnimation) {
+      setShowReadyAnimation(true);
+      setTimeout(() => setShowReadyAnimation(false), 5 * 1000);
+    }
+  }, [isCodeConfirmed]);
+
   return (
     <div
       className={`config-section ${
         isConfigOpen ? 'open' : 'closed'
-      } bg-white border border-gray-300 rounded-md shadow-sm relative`}
+      } bg-white border border-gray-300 rounded-md shadow-sm relative ${!isConfigOpen ? 'opacity-50' : ''}
+      ${showReadyAnimation ? 'animate-border-pulse' : ''}
+        `}
     >
       {/* Overlay if not ready */}
       {!isCodeConfirmed && (
@@ -61,7 +71,7 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isRunning, isCodeConfirmed, s
       )}
       {/* Section Header */}
       <div className="section-header flex items-center justify-between p-2 bg-gray-200 border-b border-gray-300">
-        <h2 className="text-sm font-semibold text-gray-800">Batch Configuration</h2>
+        <h2 className="text-sm font-semibold text-gray-800">Data Insertion</h2>
         <button
           className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
           onClick={() => setIsConfigOpen(!isConfigOpen)}
@@ -145,7 +155,7 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isRunning, isCodeConfirmed, s
                   : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
               }`}
             >
-              Start
+              Insert Data
             </button>
             <button
               onClick={handleStop}

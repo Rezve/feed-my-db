@@ -9,7 +9,7 @@ function registerHandlers(mainWindow: BrowserWindow) {
   });
 
   ipcMain.on('app:connect', (event, dbConfig) => {
-    DataGeneratorManager.setDBConfig(mainWindow, event, dbConfig);
+    DataGeneratorManager.connectToDatabaseAndSaveConfig(mainWindow, event, dbConfig);
   });
 
   ipcMain.on('app:start', (event, batchConfig) => {

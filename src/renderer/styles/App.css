@@ -27,3 +27,21 @@
     opacity: 1;
   }
 }
+
+@layer utilities {
+  .animate-border-pulse {
+    animation: borderPulse 2s ease-in-out;
+  }
+}
+
+@keyframes borderPulse {
+  0% {
+    border-color: transparent;
+  }
+  50% {
+    border-color: #10b981; /* Green-600 from Tailwind, matches "Preview Data" */
+  }
+  100% {
+    border-color: #d1d5db; /* Gray-300, your default border */
+  }
+}

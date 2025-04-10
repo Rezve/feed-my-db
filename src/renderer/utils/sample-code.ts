@@ -1,4 +1,4 @@
-export const BasicCode = `// Welcome to the Generator Function Editor!
+export const BasicCode = `// Welcome to the Data Schema Editor!
 // This is your space to create custom fake data for your application.
 // You can access the \`@faker-js/faker\` library with \`require('@faker-js/faker')\`.
 
@@ -12,13 +12,13 @@ function generateFakeData() {
   };
 }
 
-// Tip: Click "Run & Validate" to test and confirm your code!
+// Tip: Click "Preview Data" to test and confirm your code!
 `;
-export const AdvancedCode = `// Welcome to the Generator Function Editor!
+export const AdvancedCode = `// Welcome to the Data Schema Editor!
 // This is your space to create custom fake data for your application.
 
 // **File Scope**: 
-// - Code outside the function runs ONCE when you validate/run it.
+// - Code outside the function runs ONCE when you click 'Preview Data'.
 // - Use this area to pre-compute values, define helpers, or set up data that 
 //   your 'generateFakeData' function will use. It’s great for performance optimizations!
 // - You have access to the '@faker-js/faker' library via 'require('@faker-js/faker')'.
@@ -71,7 +71,7 @@ function generateFakeData() {
 }
 
 // **Tips**:
-// - Check out Faker’s API for more options (e.g., faker.person, faker.internet, faker.date).
+// - Check out Faker's API for more options (e.g., faker.person, faker.internet, faker.date).
 // - Keep 'generateFakeData' fast since it runs for each item in the output array.
-// - Test your code with the "Run & Validate" button to see a sample!
+// - Test your code with the "Preview Data" button to see a sample!
 `;

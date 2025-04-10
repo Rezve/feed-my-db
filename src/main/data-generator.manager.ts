@@ -22,7 +22,7 @@ export class DataGeneratorManager {
     exports: {} as any, // Shortcut for module.exports
   };
 
-  static async setDBConfig(window: BrowserWindow, event: any, dbConfig: any) {
+  static async connectToDatabaseAndSaveConfig(window: BrowserWindow, event: any, dbConfig: any) {
     try {
       this.dbConfig = dbConfig;
       this.DB = DatabaseConnection.getInstance(this.dbConfig, true);
@@ -78,7 +78,7 @@ export class DataGeneratorManager {
       // Generate data once and reply
       const fakeDataArray = Array.from({ length: 1 }, () => this.userFunctionToGenerateData());
       window.webContents.send('app:code:result', fakeDataArray);
-      window.webContents.send('app:status', 'Generator Ready');
+      window.webContents.send('app:status', 'Data Schema Ready');
     } catch (error: any) {
       window.webContents.send('app:code:result', { error: error.message });
       window.webContents.send('app:status', `Error - ${error.message}`);

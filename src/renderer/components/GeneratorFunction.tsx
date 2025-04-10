@@ -22,6 +22,7 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
   const [sampleData, setSampleData] = useState<any[] | null>(null);
   const [hasCodeChanged, setHasCodeChanged] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showReadyAnimation, setShowReadyAnimation] = useState(false);
 
   useEffect(() => {
     window.electronAPI.on('app:code:result', (result) => {
@@ -39,6 +40,13 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
     });
   }, []);
 
+  useEffect(() => {
+    if (isConnected && !showReadyAnimation) {
+      setShowReadyAnimation(true);
+      setTimeout(() => setShowReadyAnimation(false), 5 * 1000);
+    }
+  }, [isConnected]);
+
   const handleRunCode = () => {
     setError(null);
     setSampleData(null);
@@ -46,6 +54,7 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
   };
 
   const handleColumnConfiguration = () => {
+    setHasCodeChanged(true);
     openTableConfigModal(true);
   };
 
@@ -69,16 +78,16 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
 
   return (
     <div
-      className={`editor-section ${
-        isEditorOpen ? 'open' : 'closed'
-      } bg-white border border-gray-300 rounded-md shadow-sm relative`}
+      className={`editor-section ${isEditorOpen ? 'open' : 'closed'} bg-white border border-gray-300 rounded-md shadow-sm relative ${
+        !isConnected ? 'opacity-50' : ''
+      } ${showReadyAnimation ? 'animate-border-pulse' : ''}`} // Apply animation
     >
       {!isConnected && (
         <div className="absolute inset-0 bg-gray-200 bg-opacity-75 flex items-center justify-center z-10"></div>
       )}
 
       <div className="section-header flex items-center justify-between p-2 bg-gray-200 border-b border-gray-300">
-        <h2 className="text-sm font-semibold text-gray-800">Generator Function</h2>
+        <h2 className="text-sm font-semibold text-gray-800">Data Schema Editor</h2>
         <button
           className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
           onClick={() => setIsEditorOpen(!isEditorOpen)}
@@ -121,13 +130,13 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
                 onClick={handleRunCode}
                 disabled={isCodeConfirmed && !hasCodeChanged}
               >
-                Run
+                Preview Data
               </button>
               <button
                 className="px-4 ml-5 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                 onClick={handleColumnConfiguration}
               >
-                Change Table
+                Edit Schema
               </button>
             </div>
           </div>
@@ -139,7 +148,7 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
             ) : sampleData ? (
               <div>{sampleData.map((data, index) => renderTable(data, index))}</div>
             ) : (
-              <div className="text-gray-500 text-sm">Run code to see preview</div>
+              <div className="text-gray-500 text-sm">Click 'Preview Data' to see results</div>
             )}
           </div>
         </div>

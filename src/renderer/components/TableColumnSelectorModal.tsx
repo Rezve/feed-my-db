@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNotification } from './notification/NotificationContext';
 
 interface TableColumnSelectorModalProps {
   isConnected: boolean;
@@ -17,6 +18,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   const [tables, setTables] = useState([] as any);
   const [columns, setColumns] = useState([] as any);
   const [fakerSelections, setFakerSelections] = useState({} as any);
+  const { addNotification } = useNotification();
 
   // Mock database fetch (replace with real DB call)
   useEffect(() => {
@@ -72,13 +74,13 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
     }
 
     const code = `
-// Welcome to the Generator Function Editor!
+// Welcome to the Data Schema Editor!
 // This is your space to create custom fake data for your application.
 
 // **File Scope**: 
-// - Code outside the function runs ONCE when you validate/run it.
+// - Code outside the function runs ONCE when you click 'Preview Data'.
 // - Use this area to pre-compute values, define helpers, or set up data that 
-//   your 'generateFakeData' function will use. It’s great for performance optimizations!
+//   your 'generateFakeData' function will use. It's great for performance optimizations!
 // - You have access to the '@faker-js/faker' library via 'require('@faker-js/faker')'.
 
 const { faker } = require('@faker-js/faker');
@@ -91,10 +93,12 @@ function generateFakeData() {
   };
 }
 
-// Tip: Click "Run & Validate" to test and review sample data!
+// **Tips**:
+// - Test your code with the "Preview Data" button to see a sample!
 `.trim();
 
     onSave(selectedTable, code); // Pass generated code to parent (e.g., HomePage)
+    addNotification('Code generated successfully', 'success');
     setIsModalOpen(false);
   };
 
@@ -181,7 +185,7 @@ function generateFakeData() {
             onClick={handleSave}
             className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            Save
+            Generate Code
           </button>
         </div>
       </div>
