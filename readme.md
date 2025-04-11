@@ -14,8 +14,10 @@
 
 ## Screenshots
 
+Configure Data Schema
 ![Configure Data Schema](src/assets/screenshots/feed-my-db-config.png)
 
+Insertion is in prgress
 ![In Action](src/assets/screenshots/feed-my-db-full.png)
 
 ## Usage
@@ -24,16 +26,16 @@
   - Open the "Database Configuration" panel.
   - Enter your database details.
   - Click "Connect".
-- Define Your Schema:
+- **Define Your Schema:**
   - In the "Data Schema Editor," click "Edit Schema."
   - Select a table and assign Faker.js methods (e.g., faker.name.fullName()) to columns.
   - Click "Generate Code" to create executable JavaScript.
-- Preview Data:
+- **Preview Data:**
   - Click "Preview Data" to see a sample of the generated data in the right panel.
-- Insert Data:
+- **Insert Data:**
   - In the "Data Insertion" panel, click "Insert Data."
   - Monitor the progress bar at the bottom; cancel if needed with "Stop" button
-- Customize (Optional):
+- **Customize (Optional):**
   - Edit the generated code in the Monaco Editor and re-run to tweak the output.
 
 ## Tech Stack
@@ -59,7 +61,7 @@ Please follow the and check the for details.
 ## Roadmap
 
 - Support for additional databases.
-  - [ ] SQL Server
+  - [x] SQL Server
   - [ ] Azure SQL
   - [ ] MySQL
   - [ ] PostgresSQL
