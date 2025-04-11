@@ -2,7 +2,7 @@ import keytar from 'keytar';
 import crypto from 'crypto';
 
 // Unique Service name for this app
-const SERVICE_NAME = 'FakeDataGenerator';
+const SERVICE_NAME = 'feed-my-db';
 
 // Function to store a key
 export async function storeKey(account: string) {

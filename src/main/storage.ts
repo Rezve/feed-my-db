@@ -18,19 +18,20 @@ export async function saveConfig(config: any) {
 export async function loadConfig() {
   try {
     const stringData = await fs.readFile(configPath, 'utf8');
-    const config = JSON.parse(stringData);
-    if (config.encryptedPassword) {
+    const config = stringData && JSON.parse(stringData);
+    const dbConfig = config.dbConfig;
+    if (dbConfig?.encryptedPassword) {
       const key = await getKey('encryptionKey');
       if (!key) {
         return {};
       }
-      config.password = decrypt(config?.encryptedPassword?.encryptedData, key, config?.encryptedPassword?.iv);
-      delete config.encryptedPassword;
+      dbConfig.password = decrypt(dbConfig?.encryptedPassword?.encryptedData, key, dbConfig?.encryptedPassword?.iv);
+      delete dbConfig.encryptedPassword;
     }
 
-    return config;
-  } catch (err) {
-    console.error('Error loading DB config:', err);
+    return dbConfig || {};
+  } catch (err: any) {
+    console.error('Error loading DB config:', err.message);
     return null;
   }
 }

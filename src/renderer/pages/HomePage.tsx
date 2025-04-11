@@ -17,6 +17,7 @@ const HomePage: React.FC = () => {
   const handleSaveCode = (tableName: string, generatedCode: any) => {
     setTableName(tableName);
     setCode(generatedCode);
+    setCodeConfirmed(false);
   };
 
   const handleOpenModal = (flag: boolean) => {
