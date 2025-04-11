@@ -86,6 +86,7 @@ export class DataGeneratorManager {
   }
 
   static async start(window: BrowserWindow, batchConfig: BatchConfig) {
+    const logInterval = 10;
     if (!this.DB) {
       return;
     }
@@ -100,7 +101,7 @@ export class DataGeneratorManager {
       window.webContents.send('app:log', {
         log: `🗂️ Generating in batches of ${batchConfig.batchSize}`,
       });
-      const { tableName, totalRecords, batchSize, concurrentBatches, logInterval } = batchConfig;
+      const { tableName, totalRecords, batchSize, concurrentBatches } = batchConfig;
       this.inserter = new DataInserter(this.DB, totalRecords, batchSize, concurrentBatches, logInterval);
       await this.inserter.insertAll(window, tableName, this.userFunctionToGenerateData);
       window.webContents.send('app:log', { log: `✔️ Operation finished.` });

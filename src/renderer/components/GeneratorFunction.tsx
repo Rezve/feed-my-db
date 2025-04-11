@@ -82,7 +82,7 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
         showReadyAnimation ? 'animate-border-pulse' : ''
       }`}
     >
-      <div className={`relative ${!isConnected ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className={`relative ${!isConnected ? '' : ''}`}>
         <div className="section-header flex items-center justify-between p-2 bg-gray-200 border-b border-gray-300">
           <h2 className="text-sm font-semibold text-gray-800">Data Schema Editor</h2>
           <button
@@ -123,18 +123,37 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
               <div className="flex items-center">
                 <button
                   className={`px-4 py-2 bg-blue-600 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                    ${isCodeConfirmed && !hasCodeChanged ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                    ${!isConnected || (isCodeConfirmed && !hasCodeChanged) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
                   onClick={handleRunCode}
-                  disabled={isCodeConfirmed && !hasCodeChanged}
+                  disabled={!isConnected || (isCodeConfirmed && !hasCodeChanged)}
                 >
                   Preview Data
                 </button>
                 <button
-                  className="px-4 ml-5 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                  className={`px-4 ml-5 py-2 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
+                    ${!isConnected ? ' bg-gray-400 cursor-not-allowed' : ' bg-gray-600 hover:bg-gray-700'}
+                    `}
                   onClick={handleColumnConfiguration}
+                  disabled={!isConnected}
                 >
                   Edit Schema
                 </button>
+
+                {!isConnected && <div className="ml-5 text-sm italic text-gray-600">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                    className="inline mr-2 align-middle"
+                  >
+                    <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z" />
+                    <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.02-.598l.088-.416c.066-.3.04-.431-.225-.492l-.451-.084.738-3.468c.194-.897-.105-1.319-.808-1.319z" />
+                    <circle cx="8" cy="4.5" r="1" />
+                  </svg>
+                  <span className="inline align-middle">Connect to a database to start defining your data schema</span>
+                </div>}
               </div>
             </div>
   
@@ -151,17 +170,6 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
           </div>
         )}
       </div>
-  
-      {/* Overlay */}
-      {!isConnected && (
-        <div className="absolute inset-0 bg-gray-200 bg-opacity-75 flex items-center justify-center z-10 animate-fade-in">
-          <div className="bg-white px-4 py-2 rounded-md shadow-sm border border-gray-300">
-            <p className="text-black text-sm font-medium">
-              Connect to a database to start defining your data schema
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
