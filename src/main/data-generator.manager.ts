@@ -45,7 +45,7 @@ export class DataGeneratorManager {
 
       window.webContents.send('app:connect:result', { success: true });
     } catch (error: any) {
-      window.webContents.send('app:status', `Error - ${error.message}`);
+      window.webContents.send('app:status', `Error`);
       window.webContents.send('app:connect:result', { success: false, message: error.message });
     }
   }
@@ -81,7 +81,7 @@ export class DataGeneratorManager {
       window.webContents.send('app:status', 'Data Schema Ready');
     } catch (error: any) {
       window.webContents.send('app:code:result', { error: error.message });
-      window.webContents.send('app:status', `Error - ${error.message}`);
+      window.webContents.send('app:status', `Error`);
     }
   }
 
@@ -90,6 +90,13 @@ export class DataGeneratorManager {
     if (!this.DB) {
       return;
     }
+
+    if (!batchConfig.tableName) {
+      window.webContents.send('app:log', { log: `🚫 Error: Please select a table before starting to insert data.` });
+      window.webContents.send('app:complete', {});
+      return;
+    }
+
     try {
       window.webContents.send('app:status', 'Running');
       window.webContents.send('app:log', {
@@ -111,7 +118,8 @@ export class DataGeneratorManager {
       window.webContents.send('app:log', {
         log: `⚠️ Operation failed with error: ${error.message}`,
       });
-      window.webContents.send('app:status', `Error - ${error.message}`);
+      window.webContents.send('app:status', `Error`);
+      window.webContents.send('app:complete', {});
     }
   }
 

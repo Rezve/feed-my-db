@@ -14,9 +14,17 @@ interface BatchConfigProps {
   isRunning: boolean;
   isCodeConfirmed: boolean;
   setIsRunning: (flag: boolean) => void;
+  setIsModalOpen: (flag: boolean) => void;
 }
 
-const BatchConfig: React.FC<BatchConfigProps> = ({ isRunning, isCodeConfirmed, setIsRunning, tableName }) => {
+const BatchConfig: React.FC<BatchConfigProps> = ({
+  isRunning,
+  isCodeConfirmed,
+  setIsRunning,
+  tableName,
+  setIsModalOpen,
+  isConnected,
+}) => {
   const [isConfigOpen, setIsConfigOpen] = useState(true);
   const [totalRecords, setTotalRecords] = useState<number>(1000);
   const [batchSize, setBatchSize] = useState<number>(100);
@@ -40,6 +48,10 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isRunning, isCodeConfirmed, s
     IPCService.stop();
   };
 
+  const onSelectClick = () => {
+    setIsModalOpen(true);
+  };
+
   useEffect(() => {
     const handleProgress = () => {
       setIsRunning(false);
@@ -58,20 +70,10 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isRunning, isCodeConfirmed, s
     <div
       className={`config-section ${
         isConfigOpen ? 'open' : 'closed'
-      } bg-white border border-gray-300 rounded-md shadow-sm relative ${!isConfigOpen ? 'opacity-50' : ''}
+      } bg-white border border-gray-300 rounded-md shadow-sm relative 
       ${showReadyAnimation ? 'animate-border-pulse' : ''}
         `}
     >
-      {/* Overlay if not ready */}
-      {/* {!isCodeConfirmed && (
-        <div className="absolute inset-0 bg-gray-200 bg-opacity-75 flex items-center justify-center z-10 animate-fade-in">
-          <div className="bg-white px-4 py-2 rounded-md shadow-sm border border-gray-300">
-            <p className="text-black text-sm font-medium">
-              Generate and preview data to enable batch insertion
-            </p>
-          </div>
-        </div>
-      )} */}
       {/* Section Header */}
       <div className="section-header flex items-center justify-between p-2 bg-gray-200 border-b border-gray-300">
         <h2 className="text-sm font-semibold text-gray-800">Data Insertion</h2>
@@ -92,8 +94,10 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isRunning, isCodeConfirmed, s
               <label className="text-sm font-medium text-gray-700 mb-1">Selected Table</label>
               <input
                 type="text"
+                placeholder={!tableName ? 'Select a Table' : ''}
                 value={tableName}
-                disabled={true}
+                onClick={onSelectClick}
+                disabled={!isConnected}
                 readOnly={true}
                 className={`w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500`}
               />
@@ -133,7 +137,6 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isRunning, isCodeConfirmed, s
                 className={`w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500`}
               />
             </div>
-
           </div>
 
           {/* Controls */}
@@ -161,21 +164,23 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isRunning, isCodeConfirmed, s
               Stop
             </button>
           </div>
-          {!isCodeConfirmed && <div className="mt-5 text-sm italic text-gray-600">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              viewBox="0 0 16 16"
-              className="inline mr-2 align-middle"
-            >
-              <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z" />
-              <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.02-.598l.088-.416c.066-.3.04-.431-.225-.492l-.451-.084.738-3.468c.194-.897-.105-1.319-.808-1.319z" />
-              <circle cx="8" cy="4.5" r="1" />
-            </svg>
-            <span className="inline align-middle">Generate and preview data to enable batch insertion</span>
-          </div>}
+          {!isCodeConfirmed && (
+            <div className="mt-5 text-sm italic text-gray-600">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+                className="inline mr-2 align-middle"
+              >
+                <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z" />
+                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.02-.598l.088-.416c.066-.3.04-.431-.225-.492l-.451-.084.738-3.468c.194-.897-.105-1.319-.808-1.319z" />
+                <circle cx="8" cy="4.5" r="1" />
+              </svg>
+              <span className="inline align-middle">Generate and preview data to enable batch insertion</span>
+            </div>
+          )}
         </div>
       )}
     </div>

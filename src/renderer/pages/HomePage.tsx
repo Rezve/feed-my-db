@@ -36,6 +36,7 @@ const HomePage: React.FC = () => {
               isCodeConfirmed={isCodeConfirmed}
               setIsRunning={setIsRunning}
               tableName={tableName}
+              setIsModalOpen={setIsModalOpen}
             />
           </div>
         </Panel>
