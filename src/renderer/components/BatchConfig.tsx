@@ -67,7 +67,13 @@ const BatchConfig: React.FC<BatchConfigProps> = ({ isRunning, isCodeConfirmed, s
     >
       {/* Overlay if not ready */}
       {!isCodeConfirmed && (
-        <div className="absolute inset-0 bg-gray-200 bg-opacity-75 flex items-center justify-center z-10"></div>
+        <div className="absolute inset-0 bg-gray-200 bg-opacity-75 flex items-center justify-center z-10 animate-fade-in">
+          <div className="bg-white px-4 py-2 rounded-md shadow-sm border border-gray-300">
+            <p className="text-black text-sm font-medium">
+              Generate and preview data to enable batch insertion
+            </p>
+          </div>
+        </div>
       )}
       {/* Section Header */}
       <div className="section-header flex items-center justify-between p-2 bg-gray-200 border-b border-gray-300">

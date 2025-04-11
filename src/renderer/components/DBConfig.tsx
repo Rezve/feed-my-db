@@ -62,7 +62,7 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
       if (result.success == true) {
         setIsConnected(true);
         addNotification('Collection Established Successfully', 'success');
-        // setIsDbConfigOpen(false);
+        setIsDbConfigOpen(false);
         return;
       }
       addNotification(`Error: ${result.message}`, 'error');

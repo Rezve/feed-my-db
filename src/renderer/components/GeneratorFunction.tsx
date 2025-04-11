@@ -79,77 +79,86 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
   return (
     <div
       className={`editor-section ${isEditorOpen ? 'open' : 'closed'} bg-white border border-gray-300 rounded-md shadow-sm relative ${
-        !isConnected ? 'opacity-50' : ''
-      } ${showReadyAnimation ? 'animate-border-pulse' : ''}`} // Apply animation
+        showReadyAnimation ? 'animate-border-pulse' : ''
+      }`}
     >
-      {!isConnected && (
-        <div className="absolute inset-0 bg-gray-200 bg-opacity-75 flex items-center justify-center z-10"></div>
-      )}
-
-      <div className="section-header flex items-center justify-between p-2 bg-gray-200 border-b border-gray-300">
-        <h2 className="text-sm font-semibold text-gray-800">Data Schema Editor</h2>
-        <button
-          className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
-          onClick={() => setIsEditorOpen(!isEditorOpen)}
-        >
-          {isEditorOpen ? '-' : '+'}
-        </button>
-      </div>
-
-      {isEditorOpen && (
-        <div className="section-content p-4 flex gap-4">
-          {/* Editor */}
-          <div className="w-1/2 flex flex-col gap-4">
-            <div className="editor-container bg-white border border-gray-300 rounded-md shadow-sm overflow-hidden">
-              <MonacoEditor
-                height="40vh"
-                defaultLanguage="javascript"
-                value={code}
-                onChange={(value) => {
-                  setCode(value || '');
-                  if (isCodeConfirmed && !hasCodeChanged) {
-                    setHasCodeChanged(true);
-                  }
-                }}
-                options={{
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  fontSize: 14,
-                  fontFamily: "'Consolas', 'Courier New', monospace",
-                  lineNumbers: 'on',
-                  renderLineHighlight: 'all',
-                  padding: { top: 8, bottom: 8 },
-                }}
-              />
+      <div className={`relative ${!isConnected ? 'opacity-50 pointer-events-none' : ''}`}>
+        <div className="section-header flex items-center justify-between p-2 bg-gray-200 border-b border-gray-300">
+          <h2 className="text-sm font-semibold text-gray-800">Data Schema Editor</h2>
+          <button
+            className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
+            onClick={() => setIsEditorOpen(!isEditorOpen)}
+          >
+            {isEditorOpen ? '-' : '+'}
+          </button>
+        </div>
+  
+        {isEditorOpen && (
+          <div className="section-content p-4 flex gap-4">
+            {/* Editor */}
+            <div className="w-1/2 flex flex-col gap-4">
+              <div className="editor-container bg-white border border-gray-300 rounded-md shadow-sm overflow-hidden">
+                <MonacoEditor
+                  height="40vh"
+                  defaultLanguage="javascript"
+                  value={code}
+                  onChange={(value) => {
+                    setCode(value || '');
+                    if (isCodeConfirmed && !hasCodeChanged) {
+                      setHasCodeChanged(true);
+                    }
+                  }}
+                  options={{
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    fontSize: 14,
+                    fontFamily: "'Consolas', 'Courier New', monospace",
+                    lineNumbers: 'on',
+                    renderLineHighlight: 'all',
+                    padding: { top: 8, bottom: 8 },
+                  }}
+                />
+              </div>
+  
+              <div className="flex items-center">
+                <button
+                  className={`px-4 py-2 bg-blue-600 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                    ${isCodeConfirmed && !hasCodeChanged ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                  onClick={handleRunCode}
+                  disabled={isCodeConfirmed && !hasCodeChanged}
+                >
+                  Preview Data
+                </button>
+                <button
+                  className="px-4 ml-5 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                  onClick={handleColumnConfiguration}
+                >
+                  Edit Schema
+                </button>
+              </div>
             </div>
-
-            <div className="flex items-center ">
-              <button
-                className={`px-4 py-2 bg-blue-600 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                  ${isCodeConfirmed && !hasCodeChanged ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
-                onClick={handleRunCode}
-                disabled={isCodeConfirmed && !hasCodeChanged}
-              >
-                Preview Data
-              </button>
-              <button
-                className="px-4 ml-5 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                onClick={handleColumnConfiguration}
-              >
-                Edit Schema
-              </button>
+  
+            {/* Preview/Error Panel */}
+            <div className="w-1/2 bg-gray-50 p-4 rounded-md border border-gray-300 h-[40vh] overflow-y-auto">
+              {error ? (
+                <div className="text-red-600 text-sm">Error: {error}</div>
+              ) : sampleData ? (
+                <div>{sampleData.map((data, index) => renderTable(data, index))}</div>
+              ) : (
+                <div className="text-gray-500 text-sm">Click 'Preview Data' to see results</div>
+              )}
             </div>
           </div>
-
-          {/* Preview/Error Panel */}
-          <div className="w-1/2 bg-gray-50 p-4 rounded-md border border-gray-300 h-[40vh] overflow-y-auto">
-            {error ? (
-              <div className="text-red-600 text-sm">Error: {error}</div>
-            ) : sampleData ? (
-              <div>{sampleData.map((data, index) => renderTable(data, index))}</div>
-            ) : (
-              <div className="text-gray-500 text-sm">Click 'Preview Data' to see results</div>
-            )}
+        )}
+      </div>
+  
+      {/* Overlay */}
+      {!isConnected && (
+        <div className="absolute inset-0 bg-gray-200 bg-opacity-75 flex items-center justify-center z-10 animate-fade-in">
+          <div className="bg-white px-4 py-2 rounded-md shadow-sm border border-gray-300">
+            <p className="text-black text-sm font-medium">
+              Connect to a database to start defining your data schema
+            </p>
           </div>
         </div>
       )}
