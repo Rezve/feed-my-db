@@ -60,6 +60,18 @@
     .dark .text-gray-600 { color: #d1d5db; }
     .dark .bg-gray-100 { background-color: #4b5563; }
     .dark .border-gray-200 { border-color: #6b7280; }
+
+    /* Full-Screen Overlay */
+    #fullscreen-overlay {
+      transition: opacity 0.3s ease;
+    }
+    #fullscreen-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #close-fullscreen:hover {
+      transform: scale(1.1);
+    }
   </style>
 </head>
 <body>
@@ -208,13 +220,25 @@
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 class="text-2xl font-semibold text-text dark:text-text-dark text-center mb-12">See It in Action</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-custom overflow-hidden">
-            <img src="./assets/screenshots/feed-my-db-config.png" alt="Feed My DB Schema Editor" class="w-full h-auto">
+          <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-custom overflow-hidden cursor-pointer">
+            <img src="./assets/screenshots/feed-my-db-config.png" alt="Feed My DB Schema Editor" class="w-full h-auto"
+              onclick="showFullScreen('./assets/screenshots/feed-my-db-config.png')"
+            >
           </div>
-          <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-custom overflow-hidden">
+          <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-custom overflow-hidden cursor-pointer" onclick="showFullScreen('./assets/screenshots/feed-my-db-full.png')">
             <img src="./assets/screenshots/feed-my-db-full.png" alt="Feed My DB Data Preview" class="w-full h-auto">
           </div>
         </div>
+      </div>
+
+      <!-- Full-Screen Overlay -->
+      <div id="fullscreen-overlay" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+        <button id="close-fullscreen" class="absolute top-4 right-4 text-white hover:text-accent focus:outline-none" aria-label="Close full-screen image">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <img id="fullscreen-image" src="" alt="Full-screen screenshot" class="max-w-[90%] max-h-[90%] object-contain">
       </div>
     </section>
 
@@ -313,6 +337,26 @@
       localStorage.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
       sunIcon.classList.toggle('hidden');
       moonIcon.classList.toggle('hidden');
+    });
+
+    // Full-Screen Image Viewer
+    function showFullScreen(imageSrc) {
+      const overlay = document.getElementById('fullscreen-overlay');
+      const fullscreenImage = document.getElementById('fullscreen-image');
+      fullscreenImage.src = imageSrc;
+      overlay.classList.remove('hidden');
+    }
+
+    document.getElementById('close-fullscreen').addEventListener('click', () => {
+      const overlay = document.getElementById('fullscreen-overlay');
+      overlay.classList.add('hidden');
+    });
+
+    // Close on clicking overlay background
+    document.getElementById('fullscreen-overlay').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        e.currentTarget.classList.add('hidden');
+      }
     });
   </script>
 
