@@ -83,7 +83,7 @@ export class DataInserter {
               const estimatedTimeRemaining = (this.totalRecords - insertedRecords) / recordsPerSecond || 0;
 
               // Send update on every batch or at logInterval
-              if (batchIndex % this.logInterval === 0 || batchIndex === totalBatches - 1) {
+              if (batchIndex % this.logInterval === 0 || batchIndex === totalBatches - 1 || percentage == 100) {
                 this.sendProgressUpdate(window, {
                   insertedRecords,
                   totalRecords: this.totalRecords,

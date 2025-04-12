@@ -60,7 +60,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   // Faker.js options (simplified list, expand as needed)
   const fakerOptions = [
     { value: 'faker.datatype.number', label: 'Number' },
-    { value: 'faker.name.firstName', label: 'First Name' },
+    { value: 'faker.person.firstName', label: 'First Name' },
     { value: 'faker.internet.email', label: 'Email' },
     { value: 'faker.lorem.word', label: 'Word' },
     { value: 'faker.commerce.price', label: 'Price' },
