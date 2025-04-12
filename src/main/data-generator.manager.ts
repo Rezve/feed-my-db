@@ -28,6 +28,7 @@ export class DataGeneratorManager {
       this.DB = DatabaseConnection.getInstance(this.dbConfig, true);
       await this.DB.getKnex().raw('SELECT 1;');
       window.webContents.send('app:status', 'Connected');
+      window.webContents.send('app:log', { log: '✅ Successfully connected to the database. Ready to go!' });
 
       const tables = await this.getTablesAndColumns();
       window.webContents.send('app:fetch-tables:result', { data: tables });
