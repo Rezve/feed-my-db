@@ -9,7 +9,7 @@ import { getKey } from './setup-keychain';
 import { encrypt } from './crypto';
 
 export class DataGeneratorManager {
-  static dbConfig = {};
+  static dbConfig = {} as any;
   static DB: DatabaseConnection;
   static inserter: DataInserter;
   static userFunctionToGenerateData: any;
@@ -18,8 +18,8 @@ export class DataGeneratorManager {
       if (module === '@faker-js/faker') return { faker };
       throw new Error('Only @faker-js/faker is allowed');
     },
-    module: { exports: {} }, // Mimic CommonJS module
-    exports: {} as any, // Shortcut for module.exports
+    module: { exports: {} },
+    exports: {} as any,
   };
 
   static async connectToDatabaseAndSaveConfig(window: BrowserWindow, event: any, dbConfig: any) {
@@ -81,7 +81,12 @@ export class DataGeneratorManager {
 
       // Generate data once and reply
       const fakeDataArray = Array.from({ length: 1 }, () => this.userFunctionToGenerateData());
-      window.webContents.send('app:code:result', fakeDataArray);
+      window.webContents.send('app:code:result', [
+        {
+          table: this.dbConfig.table,
+          data: fakeDataArray,
+        },
+      ]);
       window.webContents.send('app:status', 'Data Schema Ready');
     } catch (error: any) {
       window.webContents.send('app:code:result', { error: error.message });

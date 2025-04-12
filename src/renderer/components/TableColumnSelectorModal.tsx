@@ -18,13 +18,15 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   const [tables, setTables] = useState([] as any);
   const [columns, setColumns] = useState([] as any);
   const [fakerSelections, setFakerSelections] = useState({} as any);
+  const [isFakerModalOpen, setIsFakerModalOpen] = useState(false);
+  const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const { addNotification } = useNotification();
 
   // Mock database fetch (replace with real DB call)
   useEffect(() => {
     window.electronAPI.on('app:fetch-tables:result', (result) => {
       if (result.error) {
-        //   setError(result.error);
+        //  ignore
       } else {
         setTables(result.data);
       }
@@ -41,7 +43,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   }, [isConnected]);
 
   // Update columns when table is selected
-  const handleTableChange = (e: any) => {
+  const handleTableChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const tableName = e.target.value;
     setSelectedTable(tableName);
     const table = tables.find((t: any) => t.name === tableName);
@@ -49,22 +51,21 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
     setFakerSelections({}); // Reset selections
   };
 
-  // Update faker function selection for a column
-  const handleFakerChange = (columnName: any, fakerFunc: any) => {
+  // Open Faker modal for a specific column
+  const openFakerModal = (columnName: string) => {
+    setActiveColumn(columnName);
+    setIsFakerModalOpen(true);
+  };
+
+  // Handle Faker function selection
+  const handleFakerChange = (columnName: string, fakerFunc: string) => {
     setFakerSelections((prev: any) => ({
       ...prev,
       [columnName]: fakerFunc,
     }));
+    setIsFakerModalOpen(false);
+    setActiveColumn(null);
   };
-
-  // Faker.js options (simplified list, expand as needed)
-  const fakerOptions = [
-    { value: 'faker.datatype.number', label: 'Number' },
-    { value: 'faker.person.firstName', label: 'First Name' },
-    { value: 'faker.internet.email', label: 'Email' },
-    { value: 'faker.lorem.word', label: 'Word' },
-    { value: 'faker.commerce.price', label: 'Price' },
-  ];
 
   // Generate code on save
   const handleSave = () => {
@@ -97,9 +98,174 @@ function generateFakeData() {
 // - Test your code with the "Preview Data" button to see a sample!
 `.trim();
 
-    onSave(selectedTable, code); // Pass generated code to parent (e.g., HomePage)
+    onSave(selectedTable, code);
     addNotification('Code generated successfully', 'success');
     setIsModalOpen(false);
+  };
+
+  // Faker.js options, grouped by module
+  const fakerOptions = [
+    {
+      module: 'Airline',
+      methods: [
+        { value: 'faker.airline.aircraftType', label: 'Aircraft Type' },
+        { value: 'faker.airline.airport', label: 'Airport' },
+      ],
+    },
+    {
+      module: 'Animal',
+      methods: [
+        { value: 'faker.animal.dog', label: 'Dog Breed' },
+        { value: 'faker.animal.cat', label: 'Cat Breed' },
+      ],
+    },
+    {
+      module: 'Color',
+      methods: [
+        { value: 'faker.color.human', label: 'Color Name' },
+        { value: 'faker.color.rgb', label: 'RGB Color' },
+      ],
+    },
+    {
+      module: 'Commerce',
+      methods: [
+        { value: 'faker.commerce.productName', label: 'Product Name' },
+        { value: 'faker.commerce.price', label: 'Price' },
+      ],
+    },
+    {
+      module: 'Company',
+      methods: [
+        { value: 'faker.company.name', label: 'Company Name' },
+        { value: 'faker.company.catchPhrase', label: 'Catch Phrase' },
+      ],
+    },
+    {
+      module: 'Database',
+      methods: [
+        { value: 'faker.database.column', label: 'Column Name' },
+        { value: 'faker.database.engine', label: 'Database Engine' },
+      ],
+    },
+    {
+      module: 'Date',
+      methods: [
+        { value: 'faker.date.past', label: 'Past Date' },
+        { value: 'faker.date.future', label: 'Future Date' },
+      ],
+    },
+    {
+      module: 'Finance',
+      methods: [
+        { value: 'faker.finance.accountNumber', label: 'Account Number' },
+        { value: 'faker.finance.transactionType', label: 'Transaction Type' },
+      ],
+    },
+    {
+      module: 'Git',
+      methods: [
+        { value: 'faker.git.commitMessage', label: 'Commit Message' },
+        { value: 'faker.git.branch', label: 'Branch Name' },
+      ],
+    },
+    {
+      module: 'Hacker',
+      methods: [
+        { value: 'faker.hacker.phrase', label: 'Hacker Phrase' },
+        { value: 'faker.hacker.noun', label: 'Hacker Noun' },
+      ],
+    },
+    {
+      module: 'Internet',
+      methods: [
+        { value: 'faker.internet.email', label: 'Email' },
+        { value: 'faker.internet.url', label: 'URL' },
+      ],
+    },
+    {
+      module: 'Location',
+      methods: [
+        { value: 'faker.location.city', label: 'City' },
+        { value: 'faker.location.zipCode', label: 'Zip Code' },
+      ],
+    },
+    {
+      module: 'Lorem',
+      methods: [
+        { value: 'faker.lorem.word', label: 'Word' },
+        { value: 'faker.lorem.sentence', label: 'Sentence' },
+      ],
+    },
+    {
+      module: 'Music',
+      methods: [
+        { value: 'faker.music.genre', label: 'Music Genre' },
+        { value: 'faker.music.songName', label: 'Song Name' },
+      ],
+    },
+    {
+      module: 'Number',
+      methods: [
+        { value: 'faker.number.int', label: 'Integer' },
+        { value: 'faker.number.float', label: 'Float' },
+      ],
+    },
+    {
+      module: 'Person',
+      methods: [
+        { value: 'faker.person.firstName', label: 'First Name' },
+        { value: 'faker.person.lastName', label: 'Last Name' },
+        { value: 'faker.person.fullName', label: 'Full Name' },
+      ],
+    },
+    {
+      module: 'Phone',
+      methods: [{ value: 'faker.phone.number', label: 'Phone Number' }],
+    },
+    {
+      module: 'Science',
+      methods: [
+        { value: 'faker.science.chemicalElement', label: 'Chemical Element' },
+        { value: 'faker.science.unit', label: 'Unit' },
+      ],
+    },
+    {
+      module: 'String',
+      methods: [
+        { value: 'faker.string.uuid', label: 'UUID' },
+        { value: 'faker.string.alphanumeric', label: 'Alphanumeric' },
+      ],
+    },
+    {
+      module: 'System',
+      methods: [
+        { value: 'faker.system.fileName', label: 'File Name' },
+        { value: 'faker.system.fileExt', label: 'File Extension' },
+      ],
+    },
+    {
+      module: 'Vehicle',
+      methods: [
+        { value: 'faker.vehicle.vehicle', label: 'Vehicle' },
+        { value: 'faker.vehicle.manufacturer', label: 'Vehicle Manufacturer' },
+      ],
+    },
+    {
+      module: 'Word',
+      methods: [
+        { value: 'faker.word.adjective', label: 'Adjective' },
+        { value: 'faker.word.noun', label: 'Noun' },
+      ],
+    },
+  ];
+
+  // Get label for selected Faker function
+  const getFakerLabel = (fakerFunc: string) => {
+    for (const module of fakerOptions) {
+      const method = module.methods.find((m) => m.value === fakerFunc);
+      if (method) return method.label;
+    }
+    return '-- Select Faker Function --';
   };
 
   if (!isModalOpen) return null;
@@ -159,18 +325,12 @@ function generateFakeData() {
                     <td className="p-2 text-sm text-gray-700">{column.type}</td>
                     <td className="p-2 text-sm text-gray-700">{column.maxLength}</td>
                     <td className="p-2">
-                      <select
-                        value={fakerSelections[column.name] || ''}
-                        onChange={(e) => handleFakerChange(column.name, e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      <button
+                        onClick={() => openFakerModal(column.name)}
+                        className="w-full px-2 py-1 text-left text-sm border border-gray-300 rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       >
-                        <option value="">-- Select Faker Function --</option>
-                        {fakerOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                        {getFakerLabel(fakerSelections[column.name] || '')}
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -189,6 +349,38 @@ function generateFakeData() {
           </button>
         </div>
       </div>
+
+      {/* Faker Function Modal */}
+      {isFakerModalOpen && activeColumn && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">Select Faker Function</h3>
+              <button className="text-gray-500 hover:text-gray-700" onClick={() => setIsFakerModalOpen(false)}>
+                ✕
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {fakerOptions.map((module) => (
+                <div key={module.module} className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">{module.module}</h4>
+                  <div className="space-y-1">
+                    {module.methods.map((method) => (
+                      <button
+                        key={method.value}
+                        onClick={() => handleFakerChange(activeColumn, method.value)}
+                        className="w-full text-left px-3 py-1 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-md"
+                      >
+                        {method.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

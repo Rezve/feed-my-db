@@ -30,7 +30,7 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
         setError(result.error);
         setSampleData(null);
       } else {
-        setSampleData(Array.isArray(result) ? result : [result]);
+        setSampleData(result);
         setError(null);
 
         setCodeConfirmed(true);
@@ -58,23 +58,28 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
     openTableConfigModal(true);
   };
 
-  const renderTable = (data: any, index: number) => (
-    <div key={index} className="mb-4">
-      <h3 className="text-sm font-semibold mb-2">Table {index + 1}</h3>
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-300">
-          <tbody>
-            {Object.entries(data).map(([key, value]) => (
-              <tr key={key} className="border-b border-gray-300">
-                <td className="p-2 font-semibold border-r border-gray-300">{key}</td>
-                <td className="p-2">{value instanceof Date ? value.toISOString() : String(value)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+  const renderTable = (tableData: any, index: number) => {
+    const { data, table } = tableData;
+
+    return (
+      <div key={index} className="mb-4">
+        <h3 className="text-sm font-semibold mb-2">Table {table}</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse border border-gray-300">
+            <tbody>
+              {/* TODO: Add support for multi table and remove 0 index */}
+              {Object.entries(data[0]).map(([key, value]) => (
+                <tr key={key} className="border-b border-gray-300">
+                  <td className="p-2 font-semibold border-r border-gray-300">{key}</td>
+                  <td className="p-2">{value instanceof Date ? value.toISOString() : String(value)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div
@@ -92,7 +97,7 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
             {isEditorOpen ? '-' : '+'}
           </button>
         </div>
-  
+
         {isEditorOpen && (
           <div className="section-content p-4 flex gap-4">
             {/* Editor */}
@@ -119,13 +124,13 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
                   }}
                 />
               </div>
-  
+
               <div className="flex items-center">
                 <button
                   className={`px-4 py-2 bg-blue-600 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                    ${!isConnected || (isCodeConfirmed && !hasCodeChanged) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                    ${!isConnected ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
                   onClick={handleRunCode}
-                  disabled={!isConnected || (isCodeConfirmed && !hasCodeChanged)}
+                  disabled={!isConnected}
                 >
                   Preview Data
                 </button>
@@ -139,24 +144,28 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
                   Edit Schema
                 </button>
 
-                {!isConnected && <div className="ml-5 text-sm italic text-gray-600">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    viewBox="0 0 16 16"
-                    className="inline mr-2 align-middle"
-                  >
-                    <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z" />
-                    <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.02-.598l.088-.416c.066-.3.04-.431-.225-.492l-.451-.084.738-3.468c.194-.897-.105-1.319-.808-1.319z" />
-                    <circle cx="8" cy="4.5" r="1" />
-                  </svg>
-                  <span className="inline align-middle">Connect to a database to start defining your data schema</span>
-                </div>}
+                {!isConnected && (
+                  <div className="ml-5 text-sm italic text-gray-600">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                      className="inline mr-2 align-middle"
+                    >
+                      <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z" />
+                      <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.02-.598l.088-.416c.066-.3.04-.431-.225-.492l-.451-.084.738-3.468c.194-.897-.105-1.319-.808-1.319z" />
+                      <circle cx="8" cy="4.5" r="1" />
+                    </svg>
+                    <span className="inline align-middle">
+                      Connect to a database to start defining your data schema
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
-  
+
             {/* Preview/Error Panel */}
             <div className="w-1/2 bg-gray-50 p-4 rounded-md border border-gray-300 h-[40vh] overflow-y-auto">
               {error ? (
