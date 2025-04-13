@@ -32,9 +32,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
 
   useEffect(() => {
     const handleProgress = (status: string) => {
-      if (!status.includes('Error')) {
-        setStatus(status);
-      }
+      setStatus(status);
     };
     window.electronAPI.on('app:status', handleProgress);
   }, []);

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
 import { registerHandlers } from './ipc-handlers';
 
@@ -22,15 +22,8 @@ function createWindow(): void {
   registerHandlers(mainWindow);
 
   const htmlPath = path.join(__dirname, '../index.html');
-  console.log('Loading HTML from:', htmlPath);
   mainWindow.loadFile(htmlPath).catch((err) => {
     console.error('Failed to load HTML:', err);
-  });
-
-  // Example IPC handler in main process
-  ipcMain.on('message-from-renderer', (event, data) => {
-    console.log('Message from renderer:', data);
-    event.reply('message-from-main', 'Hello from main process!');
   });
 }
 

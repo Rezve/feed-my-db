@@ -4,7 +4,7 @@ import { useNotification } from './notification/NotificationContext';
 interface TableColumnSelectorModalProps {
   isConnected: boolean;
   isModalOpen: boolean;
-  onSave: (tableName: string, code: string) => void;
+  onSave: (tableNames: string[], code: string) => void;
   setIsModalOpen: (flag: boolean) => void;
 }
 
@@ -15,11 +15,12 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   isModalOpen,
 }) => {
   const [selectedTable, setSelectedTable] = useState('');
-  const [tables, setTables] = useState([] as any);
-  const [columns, setColumns] = useState([] as any);
-  const [fakerSelections, setFakerSelections] = useState({} as any);
+  const [schema, setSchema] = useState([] as any);
+  const [selectedTables, setSelectedTables] = useState<{
+    [tableName: string]: { columns: any[]; fakerSelections: { [column: string]: string } };
+  }>({});
   const [isFakerModalOpen, setIsFakerModalOpen] = useState(false);
-  const [activeColumn, setActiveColumn] = useState<string | null>(null);
+  const [activeColumn, setActiveColumn] = useState<{ tableName: string; columnName: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { addNotification } = useNotification();
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -31,7 +32,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
       if (result.error) {
         // setError(result.error);
       } else {
-        setTables(result.data);
+        setSchema(result.data);
       }
     });
 
@@ -40,8 +41,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
     } else {
       setIsModalOpen(false);
       setSelectedTable('');
-      setColumns([]);
-      setFakerSelections({});
+      setSelectedTables({});
     }
   }, [isConnected]);
 
@@ -55,28 +55,61 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   const handleTableChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const tableName = e.target.value;
     setSelectedTable(tableName);
-    const table = tables.find((t: any) => t.name === tableName);
-    setColumns(table ? table.columns : []);
-    setFakerSelections({}); // Reset selections
-    setIsSubmitted(false); // Reset submission state
+
+    if (!tableName) {
+      setSelectedTables({});
+      return;
+    }
+
+    const getReferencedTables = (tableName: string, visited: Set<string> = new Set()) => {
+      if (visited.has(tableName)) return {};
+
+      visited.add(tableName);
+      const table = schema.tables.find((t: any) => t.name === tableName);
+      if (!table) return {};
+
+      const result: { [key: string]: { columns: any[]; fakerSelections: { [column: string]: string } } } = {
+        [tableName]: { columns: table.columns, fakerSelections: {} },
+      };
+
+      // Find foreign key constraints where this table is the parent
+      const foreignKeys = schema.constraints.filter((constraint: any) => constraint.ParentTable === tableName);
+      for (const fk of foreignKeys) {
+        const referencedTable = fk.ReferencedTable;
+        const referencedData = getReferencedTables(referencedTable, visited);
+        Object.assign(result, referencedData);
+      }
+
+      return result;
+    };
+
+    const tablesToInclude = getReferencedTables(tableName);
+    setSelectedTables(tablesToInclude);
+    setIsSubmitted(false);
   };
 
   // Open Faker modal for a specific column
-  const openFakerModal = (columnName: string) => {
-    setActiveColumn(columnName);
-    setSearchQuery(''); // Reset search query when opening
+  const openFakerModal = (tableName: string, columnName: string) => {
+    setActiveColumn({ tableName, columnName });
+    setSearchQuery('');
     setIsFakerModalOpen(true);
   };
 
   // Handle Faker function selection
-  const handleFakerChange = (columnName: string, fakerFunc: string) => {
-    setFakerSelections((prev: any) => ({
+  const handleFakerChange = (tableName: string, columnName: string, fakerFunc: string) => {
+    setSelectedTables((prev) => ({
       ...prev,
-      [columnName]: fakerFunc,
+      [tableName]: {
+        ...prev[tableName],
+        fakerSelections: {
+          ...prev[tableName].fakerSelections,
+          [columnName]: fakerFunc,
+        },
+      },
     }));
     setIsFakerModalOpen(false);
     setActiveColumn(null);
-    setSearchQuery(''); // Reset search query when selecting
+    setSearchQuery('');
   };
 
   // Generate code on save
@@ -86,51 +119,69 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
       addNotification('Please select a table.', 'error');
       return;
     }
-    if (!columns.every((column: any) => column.isNullable || column.isIdentity || fakerSelections[column.name])) {
-      addNotification('Please select Faker functions for all required columns.', 'error');
-      return;
+
+    for (const [tableName, tableData] of Object.entries(selectedTables)) {
+      const requiredColumnsMissing = tableData.columns.some(
+        (column: any) => !column.isNullable && !column.isIdentity && !tableData.fakerSelections[column.name]
+      );
+      if (requiredColumnsMissing) {
+        addNotification(`Please select Faker functions for all required columns in table ${tableName}.`, 'error');
+        return;
+      }
+    }
+
+    const codeParts: string[] = [];
+    codeParts.push(`const { faker } = require('@faker-js/faker');`);
+
+    for (const [tableName, tableData] of Object.entries(selectedTables)) {
+      const tableCode = `
+function generateFakeData_${tableName}() {
+  return {
+    ${Object.entries(tableData.fakerSelections)
+      .filter(([column]) => !tableData.columns.find((c: any) => c.name === column && c.isIdentity))
+      .map(([column, fakerFunc]) => `${column}: ${fakerFunc}()`)
+      .join(',\n    ')}
+  };
+}`;
+      codeParts.push(tableCode.trim());
     }
 
     const code = `
 // Welcome to the Data Schema Editor!
-// This is your space to create custom fake data for your database.
+// This script generates fake data for multiple tables respecting foreign key constraints.
 
-// **File Scope**: 
-// - Code outside the function runs ONCE when you click 'Test & Confirm'.
-// - Use this area to pre-compute values, define helpers, or set up data that 
-//   your 'generateFakeData' function will use. It's great for performance optimizations!
-// - You have access to the '@faker-js/faker' library via 'require('@faker-js/faker')'.
+${codeParts.join('\n\n')}
 
-const { faker } = require('@faker-js/faker');
-
+// Main function to generate data for all tables
 function generateFakeData() {
-  return {
-    ${Object.entries(fakerSelections)
-      .filter(([column]) => !columns.find((c: any) => c.name === column && c.isIdentity))
-      .map(([column, fakerFunc]) => `${column}: ${fakerFunc}()`)
-      .join(',\n    ')}
-  };
+  const result = {};
+  ${Object.keys(selectedTables)
+    .map((tableName) => `result['${tableName}'] = generateFakeData_${tableName}();`)
+    .join('\n  ')}
+  return result;
 }
-
-// - Tip: Click "Test & Confirm" to view and verify your code!.
 `.trim();
 
-    onSave(selectedTable, code);
-    addNotification('Code generated successfully', 'success');
+    onSave(Object.keys(selectedTables), code); // Pass table names
+    addNotification('Code generated successfully for all related tables', 'success');
     setIsModalOpen(false);
   };
 
   // Auto-select Faker functions for all columns
   const handleAutoSelect = () => {
-    const newSelections: { [key: string]: string } = {};
-    columns.forEach((column: any) => {
-      const match = findBestFakerMatch(column.name);
-      if (match) {
-        newSelections[column.name] = match;
-      }
-    });
-    setFakerSelections(newSelections);
-    addNotification('Auto-selected Faker functions for columns', 'success');
+    const updatedTables = { ...selectedTables };
+    for (const [tableName, tableData] of Object.entries(updatedTables)) {
+      const newSelections: { [key: string]: string } = {};
+      tableData.columns.forEach((column: any) => {
+        const match = findBestFakerMatch(column.name);
+        if (match) {
+          newSelections[column.name] = match;
+        }
+      });
+      updatedTables[tableName].fakerSelections = newSelections;
+    }
+    setSelectedTables(updatedTables);
+    addNotification('Auto-selected Faker functions for all related tables', 'success');
   };
 
   // Find best matching Faker function for a column
@@ -158,10 +209,10 @@ function generateFakeData() {
   // Normalize column name for matching
   const normalizeColumnName = (columnName: string): string => {
     return columnName
-      .split(/[-_]/) // Split on hyphens or underscores
+      .split(/[-_]/)
       .flatMap((word) =>
         word
-          .replace(/([A-Z])/g, ' $1') // Split on capital letters (e.g., FirstName -> First Name)
+          .replace(/([A-Z])/g, ' $1')
           .trim()
           .split(/\s+/)
       )
@@ -326,7 +377,8 @@ function generateFakeData() {
   ];
 
   // Get label for selected Faker function
-  const getFakerLabel = (fakerFunc: string) => {
+  const getFakerLabel = (tableName: string, fakerFunc: string | undefined) => {
+    if (!fakerFunc) return '-- Select Faker Function --';
     for (const module of fakerOptions) {
       const method = module.methods.find((m) => m.value === fakerFunc);
       if (method) return method.label;
@@ -353,7 +405,7 @@ function generateFakeData() {
     .map((module) => {
       const moduleMatches = fuzzySearch(searchQuery, module.module);
       const filteredMethods = moduleMatches
-        ? module.methods // Show all methods if module name matches
+        ? module.methods
         : module.methods.filter((method) => fuzzySearch(searchQuery, method.label));
       return {
         ...module,
@@ -384,7 +436,7 @@ function generateFakeData() {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="">-- Select a table --</option>
-            {tables.map((table: any) => (
+            {schema.tables.map((table: any) => (
               <option key={table.name} value={table.name}>
                 {table.name}
               </option>
@@ -392,9 +444,10 @@ function generateFakeData() {
           </select>
         </div>
 
-        {/* Column Table */}
-        {selectedTable && columns.length > 0 && (
-          <div className="mb-4">
+        {/* Column Tables for Selected Tables */}
+        {Object.entries(selectedTables).map(([tableName, tableData]) => (
+          <div key={tableName} className="mb-6">
+            <h3 className="text-md font-semibold text-gray-800 mb-2">{tableName}</h3>
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-gray-200">
@@ -413,11 +466,11 @@ function generateFakeData() {
                 </tr>
               </thead>
               <tbody>
-                {columns.map((column: any) => (
+                {tableData.columns.map((column: any) => (
                   <tr key={column.name} className="border-b border-gray-200">
                     <td className="p-2 text-sm text-gray-700">
                       {column.name}
-                      {!column.isNullable && !column.isIdentity && !fakerSelections[column.name] && (
+                      {!column.isNullable && !column.isIdentity && !tableData.fakerSelections[column.name] && (
                         <span className="text-red-600 text-xs ml-2">Required</span>
                       )}
                       {column.isIdentity && <span className="text-blue-600 text-xs ml-2">Auto-generated</span>}
@@ -429,14 +482,14 @@ function generateFakeData() {
                         <span className="text-gray-500 text-sm">Not applicable</span>
                       ) : (
                         <button
-                          onClick={() => openFakerModal(column.name)}
+                          onClick={() => openFakerModal(tableName, column.name)}
                           className={`w-full px-2 py-1 text-left text-sm border rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                            isSubmitted && !column.isNullable && !fakerSelections[column.name]
+                            isSubmitted && !column.isNullable && !tableData.fakerSelections[column.name]
                               ? 'border-red-500'
                               : 'border-gray-300'
                           }`}
                         >
-                          {getFakerLabel(fakerSelections[column.name] || '')}
+                          {getFakerLabel(tableName, tableData.fakerSelections[column.name])}
                         </button>
                       )}
                     </td>
@@ -445,7 +498,7 @@ function generateFakeData() {
               </tbody>
             </table>
           </div>
-        )}
+        ))}
 
         {/* Save Button */}
         <div className="flex justify-end">
@@ -471,7 +524,9 @@ function generateFakeData() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Select Faker Function</h3>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Select Faker Function for {activeColumn.columnName}
+              </h3>
               <button
                 className="text-gray-500 hover:text-gray-700"
                 onClick={() => {
@@ -505,7 +560,9 @@ function generateFakeData() {
                       {module.methods.map((method) => (
                         <button
                           key={method.value}
-                          onClick={() => handleFakerChange(activeColumn, method.value)}
+                          onClick={() =>
+                            handleFakerChange(activeColumn.tableName, activeColumn.columnName, method.value)
+                          }
                           className="w-full text-left px-3 py-1 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-md"
                         >
                           {method.label}

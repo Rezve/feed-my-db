@@ -2,15 +2,15 @@ import { useEffect, useState } from 'react';
 import { IPCService } from '../services/ipc-service';
 
 export interface BatchConfig {
-  tableName: string;
-  totalRecords: number;
+  tableNames: string[];
+  totalRecords: { [table: string]: number };
   batchSize: number;
   concurrentBatches: number;
 }
 
 interface DataInsertionPanelProps {
   isConnected: boolean;
-  tableName: string;
+  tableNames: string[] | undefined;
   isRunning: boolean;
   isCodeConfirmed: boolean;
   setIsRunning: (flag: boolean) => void;
@@ -21,7 +21,7 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
   isRunning,
   isCodeConfirmed,
   setIsRunning,
-  tableName,
+  tableNames,
   setIsModalOpen,
   isConnected,
 }) => {
@@ -33,8 +33,8 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
 
   const handleStart = async () => {
     const batchConfig: BatchConfig = {
-      tableName,
-      totalRecords,
+      tableNames: tableNames ? tableNames : [],
+      totalRecords: Object.fromEntries((tableNames && tableNames.map((table) => [table, totalRecords])) || []),
       batchSize,
       concurrentBatches,
     };
@@ -94,8 +94,8 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
               <label className="text-sm font-medium text-gray-700 mb-1">Selected Table</label>
               <input
                 type="text"
-                placeholder={!tableName ? 'Select a Table' : ''}
-                value={tableName}
+                placeholder={!tableNames ? 'Select a Table' : ''}
+                value={tableNames?.toString()}
                 onClick={onSelectClick}
                 disabled={!isConnected}
                 readOnly={true}

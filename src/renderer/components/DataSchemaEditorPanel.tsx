@@ -59,24 +59,31 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
   };
 
   const renderTable = (tableData: any, index: number) => {
-    const { data, table } = tableData;
-
+    const { data } = tableData;
     return (
       <div key={index} className="mb-4">
-        <h3 className="text-sm font-semibold mb-2">Table {table}</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300">
-            <tbody>
-              {/* TODO: Add support for multi table and remove 0 index */}
-              {Object.entries(data[0]).map(([key, value]) => (
-                <tr key={key} className="border-b border-gray-300">
-                  <td className="p-2 font-semibold border-r border-gray-300">{key}</td>
-                  <td className="p-2">{value instanceof Date ? value.toISOString() : String(value)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {Object.entries(data as { string: any[] }).map(([key, value]) => {
+          return (
+            <div className="mb-5">
+              <h3 className="text-sm font-semibold mb-2">Table: {key}</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <tbody>
+                    {/* TODO: Add support for multi table and remove 0 index */}
+                    {Object.entries(value).map(([key, value]) => {
+                      return (
+                        <tr key={key} className="border-b border-gray-300">
+                          <td className="p-2 font-semibold border-r border-gray-300">{key}</td>
+                          <td className="p-2">{value instanceof Date ? value.toISOString() : String(value)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   };

@@ -9,13 +9,13 @@ import { BasicCode } from '../utils/sample-code';
 
 const HomePage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [tableName, setTableName] = useState('');
+  const [tableNames, setTableNames] = useState<string[]>();
   const [isConnected, setIsConnected] = useState(false);
   const [isCodeConfirmed, setCodeConfirmed] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [code, setCode] = useState<string>(BasicCode);
-  const handleSaveCode = (tableName: string, generatedCode: any) => {
-    setTableName(tableName);
+  const handleSaveCode = (tableNames: string[], generatedCode: string) => {
+    setTableNames(tableNames);
     setCode(generatedCode);
     setCodeConfirmed(true);
     window.electronAPI.send('app:code', generatedCode);
@@ -37,7 +37,7 @@ const HomePage: React.FC = () => {
               isRunning={isRunning}
               isCodeConfirmed={isCodeConfirmed}
               setIsRunning={setIsRunning}
-              tableName={tableName}
+              tableNames={tableNames}
               setIsModalOpen={setIsModalOpen}
             />
           </div>

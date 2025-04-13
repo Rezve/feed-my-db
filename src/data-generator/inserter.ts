@@ -3,12 +3,11 @@ import DatabaseConnection from './connection';
 import { BrowserWindow } from 'electron';
 
 export class DataInserter {
-  private db: Knex;
+  public db: Knex;
   private shouldStopProcess: boolean;
 
   constructor(
     private DBConnection: DatabaseConnection,
-    private totalRecords: number,
     private batchSize: number,
     private concurrentBatches: number,
     private logInterval: number
@@ -21,23 +20,42 @@ export class DataInserter {
     this.shouldStopProcess = true;
   }
 
-  private async insertSingleBatch(tableName: string, rows: any[]): Promise<number> {
-    await this.db(tableName).insert(rows);
-    return rows.length;
+  private async insertSingleBatch(
+    tableName: string,
+    rows: any[],
+    primaryKeyColumn: string
+  ): Promise<{ count: number; keys: any[] }> {
+    try {
+      const result = await this.db(tableName)
+        .insert(rows)
+        .returning(`${primaryKeyColumn ?? '*'}`); // SQL Server OUTPUT clause
+
+      const keys = result.map((row: any) => row[primaryKeyColumn]);
+      return { count: rows.length, keys };
+    } catch (error: any) {
+      throw new Error(`Failed to insert batch into ${tableName}: ${error.message}`);
+    }
   }
 
-  public async insertAll(window: BrowserWindow, tableName: string, userFunctionToGenerateData: any): Promise<number> {
+  public async insertAll(
+    window: BrowserWindow,
+    tableName: string,
+    dataGenerator: () => any,
+    totalRecords: number, // Per table
+    primaryKeyColumn: string
+  ): Promise<{ count: number; primaryKeys: any[] }> {
     this.shouldStopProcess = false;
 
-    const totalBatches = Math.ceil(this.totalRecords / this.batchSize);
+    const totalBatches = Math.ceil(totalRecords / this.batchSize);
     let insertedRecords = 0;
-    const batchPromises: Promise<number>[] = [];
+    const primaryKeys: any[] = [];
+    const batchPromises: Promise<{ count: number; keys: any[] }>[] = [];
     const startTime = Date.now();
 
     // Initial progress update
     this.sendProgressUpdate(window, {
       insertedRecords,
-      totalRecords: this.totalRecords,
+      totalRecords,
       percentage: 0,
       elapsedTime: 0,
       estimatedTimeRemaining: 0,
@@ -51,8 +69,8 @@ export class DataInserter {
       if (this.shouldStopProcess) {
         this.sendProgressUpdate(window, {
           insertedRecords,
-          totalRecords: this.totalRecords,
-          percentage: (insertedRecords / this.totalRecords) * 100,
+          totalRecords,
+          percentage: (insertedRecords / totalRecords) * 100,
           elapsedTime: (Date.now() - startTime) / 1000,
           estimatedTimeRemaining: 0,
           currentBatch: i,
@@ -64,29 +82,28 @@ export class DataInserter {
 
       for (let j = 0; j < currentBatchSize; j++) {
         const batchIndex = i + j;
-        const recordsToGenerate = Math.min(this.batchSize, this.totalRecords - batchIndex * this.batchSize);
+        const recordsToGenerate = Math.min(this.batchSize, totalRecords - batchIndex * this.batchSize);
 
         if (this.shouldStopProcess) {
           break;
         }
 
         if (recordsToGenerate > 0) {
-          const rows = this.generateBatch(recordsToGenerate, userFunctionToGenerateData);
+          const rows = this.generateBatch(recordsToGenerate, dataGenerator);
           batchPromises.push(
-            this.insertSingleBatch(tableName, rows).then((count) => {
+            this.insertSingleBatch(tableName, rows, primaryKeyColumn).then(({ count, keys }) => {
               insertedRecords += count;
+              primaryKeys.push(...keys);
 
-              // Calculate progress metrics
-              const elapsedTime = (Date.now() - startTime) / 1000; // in seconds
-              const percentage = (insertedRecords / this.totalRecords) * 100;
-              const recordsPerSecond = insertedRecords / elapsedTime;
-              const estimatedTimeRemaining = (this.totalRecords - insertedRecords) / recordsPerSecond || 0;
+              const elapsedTime = (Date.now() - startTime) / 1000;
+              const percentage = (insertedRecords / totalRecords) * 100;
+              const recordsPerSecond = insertedRecords / elapsedTime || 1;
+              const estimatedTimeRemaining = (totalRecords - insertedRecords) / recordsPerSecond;
 
-              // Send update on every batch or at logInterval
-              if (batchIndex % this.logInterval === 0 || batchIndex === totalBatches - 1 || percentage == 100) {
+              if (batchIndex % this.logInterval === 0 || batchIndex === totalBatches - 1 || percentage === 100) {
                 this.sendProgressUpdate(window, {
                   insertedRecords,
-                  totalRecords: this.totalRecords,
+                  totalRecords,
                   percentage,
                   elapsedTime,
                   estimatedTimeRemaining,
@@ -94,7 +111,7 @@ export class DataInserter {
                   totalBatches,
                 });
               }
-              return count;
+              return { count, keys };
             })
           );
         }
@@ -104,7 +121,7 @@ export class DataInserter {
       await new Promise((resolve) => setTimeout(resolve, 1));
     }
 
-    return insertedRecords;
+    return { count: insertedRecords, primaryKeys };
   }
 
   private sendProgressUpdate(
@@ -133,8 +150,12 @@ export class DataInserter {
     });
   }
 
-  private generateBatch(size: number, userFunctionToGenerateData: any): any[] {
-    return Array.from({ length: size }, userFunctionToGenerateData);
+  private generateBatch(recordsToGenerate: number, dataGenerator: () => any): any[] {
+    const rows: any[] = [];
+    for (let i = 0; i < recordsToGenerate; i++) {
+      rows.push(dataGenerator());
+    }
+    return rows;
   }
 
   public async getTotalCount(tableName: string): Promise<number> {
