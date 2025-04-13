@@ -73,5 +73,5 @@ function generateFakeData() {
 // **Tips**:
 // - Check out Faker's API for more options (e.g., faker.person, faker.internet, faker.date).
 // - Keep 'generateFakeData' fast since it runs for each item in the output array.
-// - Test your code with the "Preview Data" button to see a sample!
+// - Use "Preview Data" to see sample output of your code or custom changes.
 `;

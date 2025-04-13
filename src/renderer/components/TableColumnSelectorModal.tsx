@@ -20,13 +20,14 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   const [fakerSelections, setFakerSelections] = useState({} as any);
   const [isFakerModalOpen, setIsFakerModalOpen] = useState(false);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const { addNotification } = useNotification();
 
   // Mock database fetch (replace with real DB call)
   useEffect(() => {
     window.electronAPI.on('app:fetch-tables:result', (result) => {
       if (result.error) {
-        //  ignore
+        // setError(result.error);
       } else {
         setTables(result.data);
       }
@@ -54,6 +55,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   // Open Faker modal for a specific column
   const openFakerModal = (columnName: string) => {
     setActiveColumn(columnName);
+    setSearchQuery(''); // Reset search query when opening
     setIsFakerModalOpen(true);
   };
 
@@ -65,6 +67,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
     }));
     setIsFakerModalOpen(false);
     setActiveColumn(null);
+    setSearchQuery(''); // Reset search query when selecting
   };
 
   // Generate code on save
@@ -95,7 +98,7 @@ function generateFakeData() {
 }
 
 // **Tips**:
-// - Test your code with the "Preview Data" button to see a sample!
+// - Use "Preview Data" to see sample output of your code or custom changes.
 `.trim();
 
     onSave(selectedTable, code);
@@ -268,6 +271,34 @@ function generateFakeData() {
     return '-- Select Faker Function --';
   };
 
+  // Fuzzy search function
+  const fuzzySearch = (query: string, text: string): boolean => {
+    if (!query) return true;
+    const normalizedQuery = query.toLowerCase().replace(/\s+/g, '');
+    const normalizedText = text.toLowerCase().replace(/\s+/g, '');
+    let queryIndex = 0;
+    for (let i = 0; i < normalizedText.length && queryIndex < normalizedQuery.length; i++) {
+      if (normalizedText[i] === normalizedQuery[queryIndex]) {
+        queryIndex++;
+      }
+    }
+    return queryIndex === normalizedQuery.length;
+  };
+
+  // Filter Faker options based on search query
+  const filteredFakerOptions = fakerOptions
+    .map((module) => {
+      const moduleMatches = fuzzySearch(searchQuery, module.module);
+      const filteredMethods = moduleMatches
+        ? module.methods // Show all methods if module name matches
+        : module.methods.filter((method) => fuzzySearch(searchQuery, method.label));
+      return {
+        ...module,
+        methods: filteredMethods,
+      };
+    })
+    .filter((module) => module.methods.length > 0);
+
   if (!isModalOpen) return null;
 
   return (
@@ -356,28 +387,51 @@ function generateFakeData() {
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-800">Select Faker Function</h3>
-              <button className="text-gray-500 hover:text-gray-700" onClick={() => setIsFakerModalOpen(false)}>
+              <button
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => {
+                  setIsFakerModalOpen(false);
+                  setSearchQuery('');
+                }}
+              >
                 ✕
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {fakerOptions.map((module) => (
-                <div key={module.module} className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">{module.module}</h4>
-                  <div className="space-y-1">
-                    {module.methods.map((method) => (
-                      <button
-                        key={method.value}
-                        onClick={() => handleFakerChange(activeColumn, method.value)}
-                        className="w-full text-left px-3 py-1 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-md"
-                      >
-                        {method.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
+
+            {/* Search Input */}
+            <div className="mb-4">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by module or function..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
             </div>
+
+            {/* Filtered Faker Options */}
+            {filteredFakerOptions.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredFakerOptions.map((module) => (
+                  <div key={module.module} className="mb-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">{module.module}</h4>
+                    <div className="space-y-1">
+                      {module.methods.map((method) => (
+                        <button
+                          key={method.value}
+                          onClick={() => handleFakerChange(activeColumn, method.value)}
+                          className="w-full text-left px-3 py-1 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-md"
+                        >
+                          {method.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-sm text-gray-500">No results found for "{searchQuery}".</div>
+            )}
           </div>
         </div>
       )}
