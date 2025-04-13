@@ -22,6 +22,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { addNotification } = useNotification();
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Mock database fetch (replace with real DB call)
@@ -57,6 +58,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
     const table = tables.find((t: any) => t.name === tableName);
     setColumns(table ? table.columns : []);
     setFakerSelections({}); // Reset selections
+    setIsSubmitted(false); // Reset submission state
   };
 
   // Open Faker modal for a specific column
@@ -79,14 +81,19 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
 
   // Generate code on save
   const handleCreateScript = () => {
-    if (!selectedTable || Object.keys(fakerSelections).length === 0) {
-      alert('Please select a table and configure at least one column.');
+    setIsSubmitted(true);
+    if (!selectedTable) {
+      addNotification('Please select a table.', 'error');
+      return;
+    }
+    if (!columns.every((column: any) => column.isNullable || column.isIdentity || fakerSelections[column.name])) {
+      addNotification('Please select Faker functions for all required columns.', 'error');
       return;
     }
 
     const code = `
 // Welcome to the Data Schema Editor!
-// This is your space to create custom fake data for your application.
+// This is your space to create custom fake data for your database.
 
 // **File Scope**: 
 // - Code outside the function runs ONCE when you click 'Test & Confirm'.
@@ -99,6 +106,7 @@ const { faker } = require('@faker-js/faker');
 function generateFakeData() {
   return {
     ${Object.entries(fakerSelections)
+      .filter(([column]) => !columns.find((c: any) => c.name === column && c.isIdentity))
       .map(([column, fakerFunc]) => `${column}: ${fakerFunc}()`)
       .join(',\n    ')}
   };
@@ -407,16 +415,30 @@ function generateFakeData() {
               <tbody>
                 {columns.map((column: any) => (
                   <tr key={column.name} className="border-b border-gray-200">
-                    <td className="p-2 text-sm text-gray-700">{column.name}</td>
+                    <td className="p-2 text-sm text-gray-700">
+                      {column.name}
+                      {!column.isNullable && !column.isIdentity && !fakerSelections[column.name] && (
+                        <span className="text-red-600 text-xs ml-2">Required</span>
+                      )}
+                      {column.isIdentity && <span className="text-blue-600 text-xs ml-2">Auto-generated</span>}
+                    </td>
                     <td className="p-2 text-sm text-gray-700">{column.type}</td>
                     <td className="p-2 text-sm text-gray-700">{column.maxLength}</td>
                     <td className="p-2">
-                      <button
-                        onClick={() => openFakerModal(column.name)}
-                        className="w-full px-2 py-1 text-left text-sm border border-gray-300 rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      >
-                        {getFakerLabel(fakerSelections[column.name] || '')}
-                      </button>
+                      {column.isIdentity ? (
+                        <span className="text-gray-500 text-sm">Not applicable</span>
+                      ) : (
+                        <button
+                          onClick={() => openFakerModal(column.name)}
+                          className={`w-full px-2 py-1 text-left text-sm border rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                            isSubmitted && !column.isNullable && !fakerSelections[column.name]
+                              ? 'border-red-500'
+                              : 'border-gray-300'
+                          }`}
+                        >
+                          {getFakerLabel(fakerSelections[column.name] || '')}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

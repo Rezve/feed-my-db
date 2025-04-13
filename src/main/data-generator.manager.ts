@@ -146,7 +146,14 @@ export class DataGeneratorManager {
 
   static async getTablesAndColumns() {
     const rows = await this.DB.getKnex()
-      .select('t.name as tableName', 'c.name as columnName', 'ty.name as dataType', 'c.max_length as maxLength')
+      .select(
+        't.name as tableName',
+        'c.name as columnName',
+        'ty.name as dataType',
+        'c.max_length as maxLength',
+        'c.is_nullable as isNullable',
+        'c.is_identity as isIdentity'
+      )
       .from('sys.columns as c')
       .join('sys.tables as t', 'c.object_id', 't.object_id')
       .join('sys.types as ty', 'c.user_type_id', 'ty.user_type_id')
@@ -163,10 +170,11 @@ export class DataGeneratorManager {
       result[row.tableName].columns.push({
         name: row.columnName,
         type: row.dataType,
+        isNullable: row.isNullable,
+        isIdentity: row.isIdentity,
         maxLength: row.maxLength === -1 ? 'MAX' : row.maxLength,
       });
     }
-
     return Object.values(result);
   }
 }
