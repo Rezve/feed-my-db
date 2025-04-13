@@ -8,7 +8,7 @@ export interface BatchConfig {
   concurrentBatches: number;
 }
 
-interface BatchConfigProps {
+interface DataInsertionPanelProps {
   isConnected: boolean;
   tableName: string;
   isRunning: boolean;
@@ -17,7 +17,7 @@ interface BatchConfigProps {
   setIsModalOpen: (flag: boolean) => void;
 }
 
-const BatchConfig: React.FC<BatchConfigProps> = ({
+const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
   isRunning,
   isCodeConfirmed,
   setIsRunning,
@@ -187,4 +187,4 @@ const BatchConfig: React.FC<BatchConfigProps> = ({
   );
 };
 
-export default BatchConfig;
+export default DataInsertionPanel;

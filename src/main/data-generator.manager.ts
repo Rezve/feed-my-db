@@ -1,4 +1,4 @@
-import { BatchConfig } from '../renderer/components/BatchConfig';
+import { BatchConfig } from '../renderer/components/DataInsertionPanel';
 import DatabaseConnection from '../data-generator/connection';
 import { BrowserWindow } from 'electron';
 import { DataInserter } from '../data-generator/inserter';
@@ -54,7 +54,7 @@ export class DataGeneratorManager {
     }
   }
 
-  static async setGeneratorFunction(window: BrowserWindow, userCode: any) {
+  static async setDataSchemaEditorPanel(window: BrowserWindow, userCode: any) {
     try {
       const wrappedCode = `
         (function (module, exports, require) {

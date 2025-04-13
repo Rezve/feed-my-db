@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import GeneratorFunction from '../components/GeneratorFunction';
-import BatchConfig from '../components/BatchConfig';
+import DataSchemaEditorPanel from '../components/DataSchemaEditorPanel';
+import DataInsertionPanel from '../components/DataInsertionPanel';
 import DBConfig from '../components/DBConfig';
 import LiveLog from '../components/LiveLog';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
@@ -31,7 +31,7 @@ const HomePage: React.FC = () => {
         <Panel defaultSize={18} collapsedSize={5} minSize={5}>
           <div className="w-80 flex flex-col bg-gray-100 p-4 space-y-4 overflow-y-auto">
             <DBConfig isConnected={isConnected} setIsConnected={setIsConnected} />
-            <BatchConfig
+            <DataInsertionPanel
               isConnected={isConnected}
               isRunning={isRunning}
               isCodeConfirmed={isCodeConfirmed}
@@ -50,7 +50,7 @@ const HomePage: React.FC = () => {
             <div className="flex-1 flex flex-col">
               <Panel>
                 <div className="flex-1 p-4">
-                  <GeneratorFunction
+                  <DataSchemaEditorPanel
                     isConnected={isConnected}
                     isCodeConfirmed={isCodeConfirmed}
                     setCodeConfirmed={setCodeConfirmed}

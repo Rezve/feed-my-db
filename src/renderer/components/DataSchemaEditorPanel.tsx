@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 
-interface GeneratorFunctionProps {
+interface DataSchemaEditorPanelProps {
   code: string;
   setCode: (code: string) => void;
   isConnected: boolean;
@@ -10,7 +10,7 @@ interface GeneratorFunctionProps {
   openTableConfigModal: (flag: boolean) => void;
 }
 
-const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
+const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
   isConnected,
   isCodeConfirmed,
   setCodeConfirmed,
@@ -183,4 +183,4 @@ const GeneratorFunction: React.FC<GeneratorFunctionProps> = ({
   );
 };
 
-export default GeneratorFunction;
+export default DataSchemaEditorPanel;
