@@ -132,7 +132,7 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
                   onClick={handleRunCode}
                   disabled={!isConnected}
                 >
-                  Preview Data
+                  Test & Confirm
                 </button>
                 <button
                   className={`px-4 ml-5 py-2 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
@@ -173,7 +173,7 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
               ) : sampleData ? (
                 <div>{sampleData.map((data, index) => renderTable(data, index))}</div>
               ) : (
-                <div className="text-gray-500 text-sm">Click 'Preview Data' to see results</div>
+                <div className="text-gray-500 text-sm">Click "Test & Confirm" to view and verify your code</div>
               )}
             </div>
           </div>

@@ -178,7 +178,7 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
                 <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.02-.598l.088-.416c.066-.3.04-.431-.225-.492l-.451-.084.738-3.468c.194-.897-.105-1.319-.808-1.319z" />
                 <circle cx="8" cy="4.5" r="1" />
               </svg>
-              <span className="inline align-middle">Generate and preview data to enable batch insertion</span>
+              <span className="inline align-middle">Test and confirm your data to enable batch insertion</span>
             </div>
           )}
         </div>

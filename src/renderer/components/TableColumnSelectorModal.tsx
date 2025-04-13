@@ -89,7 +89,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
 // This is your space to create custom fake data for your application.
 
 // **File Scope**: 
-// - Code outside the function runs ONCE when you click 'Preview Data'.
+// - Code outside the function runs ONCE when you click 'Test & Confirm'.
 // - Use this area to pre-compute values, define helpers, or set up data that 
 //   your 'generateFakeData' function will use. It's great for performance optimizations!
 // - You have access to the '@faker-js/faker' library via 'require('@faker-js/faker')'.
@@ -104,8 +104,7 @@ function generateFakeData() {
   };
 }
 
-// **Tips**:
-// - Use "Preview Data" to see sample output of your code or custom changes.
+// - Tip: Click "Test & Confirm" to view and verify your code!.
 `.trim();
 
     onSave(selectedTable, code);
