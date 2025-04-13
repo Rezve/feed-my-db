@@ -78,7 +78,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   };
 
   // Generate code on save
-  const handleGenerateCode = () => {
+  const handleCreateScript = () => {
     if (!selectedTable || Object.keys(fakerSelections).length === 0) {
       alert('Please select a table and configure at least one column.');
       return;
@@ -110,6 +110,55 @@ function generateFakeData() {
     onSave(selectedTable, code);
     addNotification('Code generated successfully', 'success');
     setIsModalOpen(false);
+  };
+
+  // Auto-select Faker functions for all columns
+  const handleAutoSelect = () => {
+    const newSelections: { [key: string]: string } = {};
+    columns.forEach((column: any) => {
+      const match = findBestFakerMatch(column.name);
+      if (match) {
+        newSelections[column.name] = match;
+      }
+    });
+    setFakerSelections(newSelections);
+    addNotification('Auto-selected Faker functions for columns', 'success');
+  };
+
+  // Find best matching Faker function for a column
+  const findBestFakerMatch = (columnName: string) => {
+    const normalizedColumn = normalizeColumnName(columnName);
+    let bestMatch: { value: string; score: number } | null = null;
+
+    for (const module of fakerOptions) {
+      for (const method of module.methods) {
+        const normalizedLabel = method.label.toLowerCase();
+        if (fuzzySearch(normalizedColumn, normalizedLabel)) {
+          const score = normalizedLabel.includes(normalizedColumn)
+            ? 1 // Exact or strong partial match
+            : 0.5; // Fuzzy match
+          if (!bestMatch || score > bestMatch.score) {
+            bestMatch = { value: method.value, score };
+          }
+        }
+      }
+    }
+
+    return bestMatch ? bestMatch.value : null;
+  };
+
+  // Normalize column name for matching
+  const normalizeColumnName = (columnName: string): string => {
+    return columnName
+      .split(/[-_]/) // Split on hyphens or underscores
+      .flatMap((word) =>
+        word
+          .replace(/([A-Z])/g, ' $1') // Split on capital letters (e.g., FirstName -> First Name)
+          .trim()
+          .split(/\s+/)
+      )
+      .join(' ')
+      .toLowerCase();
   };
 
   // Faker.js options, grouped by module
@@ -378,11 +427,19 @@ function generateFakeData() {
 
         {/* Save Button */}
         <div className="flex justify-end">
+          {selectedTable && (
+            <button
+              onClick={handleAutoSelect}
+              className="px-4 mr-5 py-2 bg-gray-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            >
+              ✨ Try Auto Select
+            </button>
+          )}
           <button
-            onClick={handleGenerateCode}
+            onClick={handleCreateScript}
             className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            Generate Code
+            Create Script
           </button>
         </div>
       </div>
