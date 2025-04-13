@@ -17,7 +17,8 @@ const HomePage: React.FC = () => {
   const handleSaveCode = (tableName: string, generatedCode: any) => {
     setTableName(tableName);
     setCode(generatedCode);
-    setCodeConfirmed(false);
+    setCodeConfirmed(true);
+    window.electronAPI.send('app:code', generatedCode);
   };
 
   const handleOpenModal = (flag: boolean) => {

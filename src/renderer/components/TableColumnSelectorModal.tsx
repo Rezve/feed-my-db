@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNotification } from './notification/NotificationContext';
 
 interface TableColumnSelectorModalProps {
@@ -22,6 +22,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { addNotification } = useNotification();
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Mock database fetch (replace with real DB call)
   useEffect(() => {
@@ -42,6 +43,12 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
       setFakerSelections({});
     }
   }, [isConnected]);
+
+  useEffect(() => {
+    if (isFakerModalOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isFakerModalOpen]);
 
   // Update columns when table is selected
   const handleTableChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -71,7 +78,7 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   };
 
   // Generate code on save
-  const handleSave = () => {
+  const handleGenerateCode = () => {
     if (!selectedTable || Object.keys(fakerSelections).length === 0) {
       alert('Please select a table and configure at least one column.');
       return;
@@ -373,7 +380,7 @@ function generateFakeData() {
         {/* Save Button */}
         <div className="flex justify-end">
           <button
-            onClick={handleSave}
+            onClick={handleGenerateCode}
             className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Generate Code
@@ -401,6 +408,7 @@ function generateFakeData() {
             {/* Search Input */}
             <div className="mb-4">
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
