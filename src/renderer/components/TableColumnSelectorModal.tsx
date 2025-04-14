@@ -131,17 +131,25 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
     }
 
     const codeParts: string[] = [];
-    codeParts.push(`const { faker } = require('@faker-js/faker');`);
-
+    codeParts.push(`const { faker } = require('@faker-js/faker');
+let uniqueCounter = 0;`);
     for (const [tableName, tableData] of Object.entries(selectedTables)) {
       const tableCode = `
+
 function generateFakeData_${tableName}() {
-  return {
+  const data = {
     ${Object.entries(tableData.fakerSelections)
       .filter(([column]) => !tableData.columns.find((c: any) => c.name === column && c.isIdentity))
-      .map(([column, fakerFunc]) => `${column}: ${fakerFunc}()`)
+      .map(([column, fakerFunc]) => {
+        const columnDetails = tableData.columns.find((c: any) => c.name === column);
+        if (columnDetails.isUnique) {
+          return `${column}: \`\${uniqueCounter++}_\${${fakerFunc}()}\``;
+        }
+        return `${column}: ${fakerFunc}()`;
+      })
       .join(',\n    ')}
   };
+  return data;
 }`;
       codeParts.push(tableCode.trim());
     }
@@ -476,7 +484,7 @@ function generateFakeData() {
                       {column.isIdentity && <span className="text-blue-600 text-xs ml-2">Auto-generated</span>}
                     </td>
                     <td className="p-2 text-sm text-gray-700">{column.type}</td>
-                    <td className="p-2 text-sm text-gray-700">{column.maxLength}</td>
+                    <td className="p-2 text-sm text-gray-700">{column.maxLength / 2}</td>
                     <td className="p-2">
                       {column.isIdentity ? (
                         <span className="text-gray-500 text-sm">Not applicable</span>

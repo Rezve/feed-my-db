@@ -78,7 +78,6 @@ export class DataGeneratorManager {
       }
 
       const sampleData = this.userFunctionToGenerateData();
-      console.log('🚀 ~ DataGeneratorManager ~ setDataSchemaEditorPanel ~ sampleData:', sampleData);
       if (!sampleData || typeof sampleData !== 'object' || !Object.keys(sampleData).length) {
         window.webContents.send('app:code:result', {
           error: 'generateFakeData must return an object with table names as keys',
@@ -86,10 +85,9 @@ export class DataGeneratorManager {
         return;
       }
 
-      const data = Object.keys(sampleData).map((key: any) => sampleData[key]());
-      console.log('🚀 ~ DataGeneratorManager ~ setDataSchemaEditorPanel ~ data:', data);
+      // const data = Object.keys(sampleData).map((key: any) => sampleData[key]());
 
-      window.webContents.send('app:code:result', [{ data }]);
+      window.webContents.send('app:code:result', [{ data: sampleData }]);
       window.webContents.send('app:status', 'Data Schema Ready');
     } catch (error: any) {
       window.webContents.send('app:code:result', { error: error.message });
@@ -128,52 +126,113 @@ export class DataGeneratorManager {
       const sortedTables = this.sortTablesByDependencies(tableNames, schema.constraints);
 
       const insertedKeys: { [table: string]: any[] } = {};
+      const uniqueValues: { [table: string]: { [column: string]: Set<string> } } = {};
       this.inserter = new DataInserter(this.DB, batchSize, concurrentBatches, logInterval);
+
+      // Calculate total records across all tables for global progress
+      const globalTotalRecords = Object.entries(totalRecords).reduce(
+        (sum, [table, count]) => (tableNames.includes(table) ? sum + count : sum),
+        0
+      );
+      let globalInsertedRecords = 0;
+      const startTime = Date.now();
 
       await this.DB.getKnex().transaction(async (trx: any) => {
         for (const tableName of sortedTables) {
-          const recordsForTable = totalRecords[tableName] || 100; // Default if not specified
+          const recordsForTable = totalRecords[tableName] || 100;
           window.webContents.send('app:log', {
             log: `📝 Processing ${recordsForTable} records for ${tableName}...`,
           });
 
+          // Initialize unique value tracking
+          uniqueValues[tableName] = {};
+          const uniqueColumns = await this.getUniqueConstraintColumns(tableName, trx);
+          uniqueColumns.forEach((col: string) => {
+            uniqueValues[tableName][col] = new Set();
+          });
+
           const dataGenerator = () => {
-            const data = this.userFunctionToGenerateData();
-            console.log('🚀 ~ DataGeneratorManager ~ dataGenerator ~ data:', data);
-            const tableData = data[tableName]();
-            console.log('🚀 ~ DataGeneratorManager ~ dataGenerator ~ tableData:', tableData);
-            if (!tableData) {
-              throw new Error(`No data generated for table ${tableName}`);
-            }
+            let attempts = 0;
+            const maxGenerateAttempts = 10;
+            // const recordCounter = uniqueValues[tableName].recordCounter || 0;
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // uniqueValues[tableName].recordCounter = recordCounter + 1;
 
-            const constraints = schema.constraints.filter((c: any) => c.ParentTable === tableName);
-            constraints.forEach((constraint: any) => {
-              const refTable = constraint.ReferencedTable;
-              // const refColumn = constraint.ReferencedColumn;
-              const parentColumn = constraint.ParentColumn;
-              if (insertedKeys[refTable] && insertedKeys[refTable].length > 0) {
-                const randomKey = insertedKeys[refTable][Math.floor(Math.random() * insertedKeys[refTable].length)];
-                tableData[parentColumn] = randomKey;
+            while (attempts < maxGenerateAttempts) {
+              const data = this.userFunctionToGenerateData();
+              const tableData = data[tableName];
+              if (!tableData) {
+                throw new Error(`No data generated for table ${tableName}`);
               }
-            });
 
-            return tableData;
+              // Ensure unique email
+              // if (uniqueColumns.includes('Email')) {
+              //   tableData.Email = `user${recordCounter}@example.com`; // Or modify Faker email
+              // }
+
+              // Foreign keys
+              const constraints = schema.constraints.filter((c: any) => c.ParentTable === tableName);
+              constraints.forEach((constraint: any) => {
+                const refTable = constraint.ReferencedTable;
+                // const refColumn = constraint.ReferencedColumn;
+                const parentColumn = constraint.ParentColumn;
+                if (insertedKeys[refTable] && insertedKeys[refTable].length > 0) {
+                  const randomKey = insertedKeys[refTable][Math.floor(Math.random() * insertedKeys[refTable].length)];
+                  tableData[parentColumn] = randomKey;
+                }
+              });
+
+              let isUnique = true;
+              for (const col of uniqueColumns) {
+                const value = tableData[col];
+                if (value && uniqueValues[tableName][col].has(value)) {
+                  isUnique = false;
+                  break;
+                }
+              }
+              if (isUnique) {
+                uniqueColumns.forEach((col: string) => {
+                  if (tableData[col]) {
+                    uniqueValues[tableName][col].add(tableData[col]);
+                  }
+                });
+                return tableData;
+              }
+              attempts++;
+            }
+            throw new Error(`Failed to generate unique data for ${tableName}`);
           };
 
           const primaryKeyColumn = await this.getPrimaryKeyColumn(tableName);
-          this.inserter.db = trx; // Use transaction
-          const result = await this.inserter.insertAll(
+          this.inserter.db = trx;
+          const { count, primaryKeys: tableKeys } = await this.inserter.insertAll(
             window,
             tableName,
             dataGenerator,
             recordsForTable,
             primaryKeyColumn
           );
-          insertedKeys[tableName] = result.primaryKeys;
-          console.log('🚀 ~ DataGeneratorManager insertedKeys[tableName]:', insertedKeys[tableName]);
+          insertedKeys[tableName] = tableKeys;
+          globalInsertedRecords += count;
 
           window.webContents.send('app:log', {
-            log: `✔️ Inserted ${result.count} records for ${tableName}`,
+            log: `✔️ Inserted ${count} records for ${tableName}`,
+          });
+
+          // Global progress update
+          const elapsedTime = (Date.now() - startTime) / 1000;
+          const percentage = (globalInsertedRecords / globalTotalRecords) * 100;
+          const recordsPerSecond = globalInsertedRecords / elapsedTime || 1;
+          const estimatedTimeRemaining = (globalTotalRecords - globalInsertedRecords) / recordsPerSecond;
+
+          window.webContents.send('app:progress', {
+            insertedRecords: globalInsertedRecords,
+            totalRecords: globalTotalRecords,
+            percentage,
+            elapsedTime,
+            estimatedTimeRemaining,
+            currentTable: tableName,
           });
         }
       });
@@ -182,13 +241,28 @@ export class DataGeneratorManager {
       window.webContents.send('app:complete', {});
       window.webContents.send('app:status', 'Complete');
     } catch (error: any) {
-      console.log('🚀 ~ DataGeneratorManager ~ start ~ error:', error);
       window.webContents.send('app:log', {
         log: `⚠️ Operation failed with error: ${error.message}`,
       });
       window.webContents.send('app:status', `Error`);
       window.webContents.send('app:complete', {});
     }
+  }
+
+  static async getUniqueConstraintColumns(tableName: string, db: any): Promise<string[]> {
+    const result = await db
+      .select('kcu.COLUMN_NAME')
+      .from('INFORMATION_SCHEMA.KEY_COLUMN_USAGE as kcu')
+      .join('INFORMATION_SCHEMA.TABLE_CONSTRAINTS as tc', {
+        'tc.CONSTRAINT_NAME': 'kcu.CONSTRAINT_NAME',
+        'tc.TABLE_NAME': 'kcu.TABLE_NAME',
+      })
+      .where({
+        'kcu.TABLE_NAME': tableName,
+        'tc.CONSTRAINT_TYPE': 'UNIQUE',
+      });
+
+    return result.map((row: any) => row.COLUMN_NAME);
   }
 
   static sortTablesByDependencies(tableNames: string[], constraints: any[]): string[] {
@@ -251,6 +325,24 @@ export class DataGeneratorManager {
       .first();
     return primaryKey?.ColumnName;
   }
+  // static async getPrimaryKeyColumn(tableName: string, db: any): Promise<string> {
+  //   const result = await db
+  //     .select('COLUMN_NAME')
+  //     .from('INFORMATION_SCHEMA.KEY_COLUMN_USAGE')
+  //     .where({
+  //       TABLE_NAME: tableName,
+  //       CONSTRAINT_NAME: db.raw(
+  //         "SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_NAME = ? AND CONSTRAINT_TYPE = 'PRIMARY KEY'",
+  //         [tableName]
+  //       ),
+  //     })
+  //     .first();
+
+  //   if (!result || !result.COLUMN_NAME) {
+  //     throw new Error(`No primary key found for table ${tableName}`);
+  //   }
+  //   return result.COLUMN_NAME;
+  // }
 
   static stop(window: BrowserWindow) {
     this.inserter?.stop();
@@ -265,21 +357,38 @@ export class DataGeneratorManager {
   }
 
   static async getTablesAndColumns() {
-    const rows = await this.DB.getKnex()
+    const knex = this.DB.getKnex();
+
+    // Subquery to get unique columns
+    const uniqueColumns = knex
+      .select('ic.object_id', 'ic.column_id')
+      .from('sys.indexes as i')
+      .join('sys.index_columns as ic', function () {
+        this.on('i.object_id', '=', 'ic.object_id').andOn('i.index_id', '=', 'ic.index_id');
+      })
+      .where('i.is_unique', 1)
+      .groupBy('ic.object_id', 'ic.column_id');
+
+    const rows = await knex
       .select(
         't.name as tableName',
         'c.name as columnName',
         'ty.name as dataType',
         'c.max_length as maxLength',
         'c.is_nullable as isNullable',
-        'c.is_identity as isIdentity'
+        'c.is_identity as isIdentity',
+        knex.raw(`CASE WHEN uc.column_id IS NOT NULL THEN 1 ELSE 0 END as isUnique`)
       )
       .from('sys.columns as c')
       .join('sys.tables as t', 'c.object_id', 't.object_id')
       .join('sys.types as ty', 'c.user_type_id', 'ty.user_type_id')
+      .leftJoin(knex.raw('(?) as uc', [uniqueColumns]), function () {
+        this.on('c.object_id', '=', 'uc.object_id').andOn('c.column_id', '=', 'uc.column_id');
+      })
+      .where('t.is_ms_shipped', 0)
       .orderBy(['t.name', 'c.column_id']);
 
-    const foreignKeys = await this.DB.getKnex()
+    const foreignKeys = await knex
       .select({
         ForeignKeyName: 'fk.name',
         ParentTable: 'tp.name',
@@ -299,7 +408,6 @@ export class DataGeneratorManager {
         this.on('fkc.referenced_object_id', '=', 'cr.object_id').andOn('fkc.referenced_column_id', '=', 'cr.column_id');
       });
 
-    // Transform rows into the desired structure
     const result: Record<string, any> = {};
 
     for (const row of rows) {
@@ -312,6 +420,7 @@ export class DataGeneratorManager {
         type: row.dataType,
         isNullable: row.isNullable,
         isIdentity: row.isIdentity,
+        isUnique: Boolean(row.isUnique),
         maxLength: row.maxLength === -1 ? 'MAX' : row.maxLength,
       });
     }
