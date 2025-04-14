@@ -78,6 +78,7 @@ export class DataGeneratorManager {
       }
 
       const sampleData = this.userFunctionToGenerateData();
+      console.log('🚀 ~ DataGeneratorManager ~ setDataSchemaEditorPanel ~ sampleData:', sampleData);
       if (!sampleData || typeof sampleData !== 'object' || !Object.keys(sampleData).length) {
         window.webContents.send('app:code:result', {
           error: 'generateFakeData must return an object with table names as keys',
@@ -85,7 +86,10 @@ export class DataGeneratorManager {
         return;
       }
 
-      window.webContents.send('app:code:result', [{ data: sampleData }]);
+      const data = Object.keys(sampleData).map((key: any) => sampleData[key]());
+      console.log('🚀 ~ DataGeneratorManager ~ setDataSchemaEditorPanel ~ data:', data);
+
+      window.webContents.send('app:code:result', [{ data }]);
       window.webContents.send('app:status', 'Data Schema Ready');
     } catch (error: any) {
       window.webContents.send('app:code:result', { error: error.message });
@@ -135,7 +139,9 @@ export class DataGeneratorManager {
 
           const dataGenerator = () => {
             const data = this.userFunctionToGenerateData();
-            const tableData = data[tableName];
+            console.log('🚀 ~ DataGeneratorManager ~ dataGenerator ~ data:', data);
+            const tableData = data[tableName]();
+            console.log('🚀 ~ DataGeneratorManager ~ dataGenerator ~ tableData:', tableData);
             if (!tableData) {
               throw new Error(`No data generated for table ${tableName}`);
             }
@@ -164,6 +170,7 @@ export class DataGeneratorManager {
             primaryKeyColumn
           );
           insertedKeys[tableName] = result.primaryKeys;
+          console.log('🚀 ~ DataGeneratorManager insertedKeys[tableName]:', insertedKeys[tableName]);
 
           window.webContents.send('app:log', {
             log: `✔️ Inserted ${result.count} records for ${tableName}`,

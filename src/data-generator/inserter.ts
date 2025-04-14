@@ -24,15 +24,20 @@ export class DataInserter {
     tableName: string,
     rows: any[],
     primaryKeyColumn: string
-  ): Promise<{ count: number; keys: any[] }> {
+  ): Promise<{ count: number; keys: any[]; failedRows?: any[] }> {
     try {
+      // Use OUTPUT for primary keys
       const result = await this.db(tableName)
         .insert(rows)
-        .returning(`${primaryKeyColumn ?? '*'}`); // SQL Server OUTPUT clause
+        .returning(`${primaryKeyColumn || '*'}`);
 
       const keys = result.map((row: any) => row[primaryKeyColumn]);
       return { count: rows.length, keys };
     } catch (error: any) {
+      if (error.number === 2627 || error.message.includes('Violation of UNIQUE KEY constraint')) {
+        console.warn(`Duplicate key violation in ${tableName}: ${error.message}`);
+        return { count: 0, keys: [], failedRows: rows };
+      }
       throw new Error(`Failed to insert batch into ${tableName}: ${error.message}`);
     }
   }
@@ -41,7 +46,7 @@ export class DataInserter {
     window: BrowserWindow,
     tableName: string,
     dataGenerator: () => any,
-    totalRecords: number, // Per table
+    totalRecords: number,
     primaryKeyColumn: string
   ): Promise<{ count: number; primaryKeys: any[] }> {
     this.shouldStopProcess = false;
@@ -49,8 +54,10 @@ export class DataInserter {
     const totalBatches = Math.ceil(totalRecords / this.batchSize);
     let insertedRecords = 0;
     const primaryKeys: any[] = [];
-    const batchPromises: Promise<{ count: number; keys: any[] }>[] = [];
+    const batchPromises: Promise<{ count: number; keys: any[]; failedRows?: any[] }>[] = [];
     const startTime = Date.now();
+    const maxRetries = 3; // Limit retries per batch
+    const retryQueue: { rows: any[]; attempt: number }[] = [];
 
     // Initial progress update
     this.sendProgressUpdate(window, {
@@ -80,20 +87,56 @@ export class DataInserter {
         break;
       }
 
-      for (let j = 0; j < currentBatchSize; j++) {
+      // Process new batches and retries
+      const batchesToProcess: { rows: any[]; isRetry: boolean; attempt: number }[] = [];
+      const recordsNeeded = Math.min(this.batchSize * currentBatchSize, totalRecords - insertedRecords);
+
+      // Add new rows if needed
+      if (recordsNeeded > 0 && retryQueue.length === 0) {
+        const recordsToGenerate = Math.min(recordsNeeded, this.batchSize);
+        const rows = this.generateBatch(recordsToGenerate, dataGenerator);
+        batchesToProcess.push({ rows, isRetry: false, attempt: 1 });
+      }
+
+      // Add retry batches
+      while (retryQueue.length > 0 && batchesToProcess.length < currentBatchSize) {
+        const retryBatch = retryQueue.shift()!;
+        if (retryBatch.attempt <= maxRetries) {
+          // Regenerate rows to avoid duplicates
+          const newRows = this.generateBatch(retryBatch.rows.length, dataGenerator);
+          batchesToProcess.push({ rows: newRows, isRetry: true, attempt: retryBatch.attempt });
+        } else {
+          window.webContents.send('app:log', {
+            log: `⚠️ Max retries (${maxRetries}) reached for batch in ${tableName}. Skipping ${retryBatch.rows.length} rows.`,
+          });
+        }
+      }
+
+      for (let j = 0; j < batchesToProcess.length; j++) {
+        const { rows, attempt } = batchesToProcess[j];
         const batchIndex = i + j;
-        const recordsToGenerate = Math.min(this.batchSize, totalRecords - batchIndex * this.batchSize);
 
         if (this.shouldStopProcess) {
           break;
         }
 
-        if (recordsToGenerate > 0) {
-          const rows = this.generateBatch(recordsToGenerate, dataGenerator);
+        if (rows.length > 0) {
           batchPromises.push(
-            this.insertSingleBatch(tableName, rows, primaryKeyColumn).then(({ count, keys }) => {
+            this.insertSingleBatch(tableName, rows, primaryKeyColumn).then(({ count, keys, failedRows }) => {
               insertedRecords += count;
               primaryKeys.push(...keys);
+
+              if (failedRows && failedRows.length > 0 && attempt < maxRetries) {
+                // Schedule retry with incremented attempt
+                retryQueue.push({ rows: failedRows, attempt: attempt + 1 });
+                window.webContents.send('app:log', {
+                  log: `🔄 Retrying ${failedRows.length} rows in ${tableName} (attempt ${attempt} of ${maxRetries})`,
+                });
+              } else if (failedRows && attempt >= maxRetries) {
+                window.webContents.send('app:log', {
+                  log: `⚠️ Max retries (${maxRetries}) reached for ${failedRows.length} rows in ${tableName}.`,
+                });
+              }
 
               const elapsedTime = (Date.now() - startTime) / 1000;
               const percentage = (insertedRecords / totalRecords) * 100;
@@ -111,7 +154,7 @@ export class DataInserter {
                   totalBatches,
                 });
               }
-              return { count, keys };
+              return { count, keys, failedRows };
             })
           );
         }
@@ -119,6 +162,29 @@ export class DataInserter {
 
       await Promise.all(batchPromises.splice(0));
       await new Promise((resolve) => setTimeout(resolve, 1));
+    }
+
+    // Handle any remaining retries
+    while (retryQueue.length > 0 && !this.shouldStopProcess) {
+      const { rows, attempt } = retryQueue.shift()!;
+      if (attempt <= maxRetries) {
+        const newRows = this.generateBatch(rows.length, dataGenerator);
+        const { count, keys, failedRows } = await this.insertSingleBatch(tableName, newRows, primaryKeyColumn);
+        insertedRecords += count;
+        primaryKeys.push(...keys);
+        if (failedRows && failedRows.length > 0 && attempt < maxRetries) {
+          retryQueue.push({ rows: failedRows, attempt: attempt + 1 });
+          window.webContents.send('app:log', {
+            log: `🔄 Retrying ${failedRows.length} rows in ${tableName} (attempt ${attempt} of ${maxRetries})`,
+          });
+        }
+      }
+    }
+
+    if (insertedRecords < totalRecords) {
+      window.webContents.send('app:log', {
+        log: `⚠️ Inserted ${insertedRecords} of ${totalRecords} requested records for ${tableName} due to duplicate constraints.`,
+      });
     }
 
     return { count: insertedRecords, primaryKeys };
