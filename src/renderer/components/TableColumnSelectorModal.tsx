@@ -143,37 +143,46 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
     for (const [tableName, tableData] of Object.entries(selectedTables)) {
       const tableCode = `
 
-function generateFakeData_${tableName}() {
-  const data = {
+function generateFake${tableName}Data() {
+   // Column name: faker function or custom data
+  return {
     ${Object.entries(tableData.fakerSelections)
       .filter(([column]) => !tableData.columns.find((c: any) => c.name === column && c.isIdentity))
       .map(([column, fakerFunc]) => {
         const columnDetails = tableData.columns.find((c: any) => c.name === column);
         if (columnDetails.isUnique) {
-          return `${column}: \`\${uniqueCounter++}_\${${fakerFunc}()}\``;
+          return `
+    // uniqueCounter ensures uniqueness when generating values,
+    // especially helpful since faker has a limited set of unique outputs
+    ${column}: \`\${uniqueCounter++}_\${${fakerFunc}()}\``;
         }
         return `${column}: ${fakerFunc}()`;
       })
       .join(',\n    ')}
   };
-  return data;
 }`;
       codeParts.push(tableCode.trim());
     }
 
     const code = `
 // Welcome to the Data Schema Editor!
-// This script generates fake data for multiple tables respecting foreign key constraints.
+// This script generates fake data for one or more database tables,
+// supporting structure, relationships, and foreign key constraints.
+
+// Each function below is responsible for generating fake data for a specific table.
+// Within each returned object:
+// - Keys represent table column names.
+// - Values are faker functions or custom expressions used to generate data per row.
 
 ${codeParts.join('\n\n')}
 
-// Main function to generate data for all tables
+// Main function to generate and return fake data for all tables
 function generateFakeData() {
-  const result = {};
-  ${Object.keys(selectedTables)
-    .map((tableName) => `result['${tableName}'] = generateFakeData_${tableName}();`)
-    .join('\n  ')}
-  return result;
+  return {
+${Object.keys(selectedTables)
+  .map((tableName) => `    '${tableName}': generateFake${tableName}Data(),`)
+  .join('\n')}
+  };
 }
 `.trim();
 
@@ -436,15 +445,20 @@ function generateFakeData() {
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Define Data Schema</h2>
+          <h2 className="text-lg font-semibold text-gray-800">Create Data Template</h2>
           <button className="text-gray-500 hover:text-gray-700" onClick={() => setIsModalOpen(false)}>
             ✕
           </button>
         </div>
+        <p className="text-gray-600 mb-4">
+          Choose tables and map their columns to Faker.js functions to create a template for generating fake data. This
+          won't modify your database structure.
+          {/* <button className="text-blue-500 text-sm hover:underline">Learn About Data Templates</button> */}
+        </p>
 
         {/* Table Selector */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Select Table</label>
+          <label className="block text-md font-semibold text-gray-800 mb-2">Select Table</label>
           <select
             value={selectedTable}
             onChange={handleTableChange}

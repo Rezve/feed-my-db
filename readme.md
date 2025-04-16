@@ -31,7 +31,7 @@
   - Select a table and assign Faker.js methods (e.g., faker.name.fullName()) to columns.
   - Click "Generate Code" to create executable JavaScript.
 - 👓 **Preview Data:**
-  - Click "Test & Confirm" to see a sample of the generated data in the right panel.
+  - Click "Preview Script" to see a sample of the generated data in the right panel.
 - 🧪 **Insert Data:**
   - In the "Data Insertion" panel, click "Insert Data."
   - Monitor the progress bar at the bottom; cancel if needed with "Stop" button

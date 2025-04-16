@@ -96,7 +96,7 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
     >
       <div className={`relative ${!isConnected ? '' : ''}`}>
         <div className="section-header flex items-center justify-between p-2 bg-gray-200 border-b border-gray-300">
-          <h2 className="text-sm font-semibold text-gray-800">Data Schema Editor</h2>
+          <h2 className="text-sm font-semibold text-gray-800">Data Template Editor</h2>
           <button
             className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
             onClick={() => setIsEditorOpen(!isEditorOpen)}
@@ -139,7 +139,7 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
                   onClick={handleRunCode}
                   disabled={!isConnected}
                 >
-                  Test & Confirm
+                  Preview Script
                 </button>
                 <button
                   className={`px-4 ml-5 py-2 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
@@ -148,7 +148,7 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
                   onClick={handleColumnConfiguration}
                   disabled={!isConnected}
                 >
-                  Edit Schema
+                  Edit Template
                 </button>
 
                 {!isConnected && (
@@ -175,12 +175,15 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
 
             {/* Preview/Error Panel */}
             <div className="w-1/2 bg-gray-50 p-4 rounded-md border border-gray-300 h-[40vh] overflow-y-auto">
+              <h2 className="text-md font-semibold">Data Preview & Errors</h2>
               {error ? (
                 <div className="text-red-600 text-sm">Error: {error}</div>
               ) : sampleData ? (
                 <div>{sampleData.map((data, index) => renderTable(data, index))}</div>
               ) : (
-                <div className="text-gray-500 text-sm">Click "Test & Confirm" to view and verify your code</div>
+                <div className="text-gray-500 text-sm mt-2">
+                  Click 'Preview Script' to see fake data from your template or view errors.
+                </div>
               )}
             </div>
           </div>

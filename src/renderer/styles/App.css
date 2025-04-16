@@ -39,7 +39,7 @@
     border-color: transparent;
   }
   50% {
-    border-color: #10b981; /* Green-600 from Tailwind, matches "Test & Confirm" */
+    border-color: #10b981; /* Green-600 from Tailwind, matches "Preview Script" */
   }
   100% {
     border-color: #d1d5db; /* Gray-300, your default border */
