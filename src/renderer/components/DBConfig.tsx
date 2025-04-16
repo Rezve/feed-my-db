@@ -68,7 +68,6 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
       if (result.success == true) {
         setIsConnected(true);
         addNotification('Successfully connected to the database', 'success');
-        setIsDbConfigOpen(false);
         return;
       }
       addNotification(`Error: ${result.message}`, 'error');
