@@ -422,6 +422,7 @@ export class DataGeneratorManager {
         isIdentity: row.isIdentity,
         isUnique: Boolean(row.isUnique),
         maxLength: row.maxLength === -1 ? 'MAX' : row.maxLength,
+        foreignKey: foreignKeys.find((f) => f.ParentTable == row.tableName && f.ParentColumn == row.columnName),
       });
     }
 

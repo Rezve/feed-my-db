@@ -124,7 +124,8 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
 
     for (const [tableName, tableData] of Object.entries(selectedTables)) {
       const requiredColumnsMissing = tableData.columns.some(
-        (column: any) => !column.isNullable && !column.isIdentity && !tableData.fakerSelections[column.name]
+        (column: any) =>
+          !column.isNullable && !column.isIdentity && !column.foreignKey && !tableData.fakerSelections[column.name]
       );
       if (requiredColumnsMissing) {
         addNotification(`Please select Faker functions for all required columns in table ${tableName}.`, 'error');
@@ -484,18 +485,19 @@ function generateFakeData() {
                   <tr key={column.name} className="border-b border-gray-200">
                     <td className="p-2 text-sm text-gray-700">
                       {column.name}
-                      {!column.isNullable && !column.isIdentity && !tableData.fakerSelections[column.name] && (
-                        <span className="text-red-600 text-xs ml-2">Not null</span>
+                      {!column.isNullable && !column.isIdentity && (
+                        <span className="text-blue-600 text-xs ml-2">Not null</span>
                       )}
                       {column.isUnique && !column.isIdentity && (
                         <span className="text-blue-600 text-xs ml-2">Unique</span>
                       )}
                       {column.isIdentity && <span className="text-blue-600 text-xs ml-2">Auto-generated</span>}
+                      {column.foreignKey && <span className="text-blue-600 text-xs ml-2">FK</span>}
                     </td>
                     <td className="p-2 text-sm text-gray-700">{column.type}</td>
                     <td className="p-2 text-sm text-gray-700">{column.maxLength / 2}</td>
                     <td className="p-2">
-                      {column.isIdentity ? (
+                      {column.isIdentity || column.foreignKey ? (
                         <span className="text-gray-500 text-sm">Not applicable</span>
                       ) : (
                         <button
