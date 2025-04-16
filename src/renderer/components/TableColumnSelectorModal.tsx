@@ -112,6 +112,8 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
     setSearchQuery('');
   };
 
+  const hasUniqueColumn = (obj: any) => Object.values(obj).some((t: any) => t.columns.some((c: any) => c.isUnique));
+
   // Generate code on save
   const handleCreateScript = () => {
     setIsSubmitted(true);
@@ -131,8 +133,12 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
     }
 
     const codeParts: string[] = [];
-    codeParts.push(`const { faker } = require('@faker-js/faker');
-let uniqueCounter = 0;`);
+    codeParts.push(`const { faker } = require('@faker-js/faker');`);
+
+    if (hasUniqueColumn(selectedTables)) {
+      codeParts.push(`let uniqueCounter = 0;`);
+    }
+
     for (const [tableName, tableData] of Object.entries(selectedTables)) {
       const tableCode = `
 
@@ -479,7 +485,10 @@ function generateFakeData() {
                     <td className="p-2 text-sm text-gray-700">
                       {column.name}
                       {!column.isNullable && !column.isIdentity && !tableData.fakerSelections[column.name] && (
-                        <span className="text-red-600 text-xs ml-2">Required</span>
+                        <span className="text-red-600 text-xs ml-2">Not null</span>
+                      )}
+                      {column.isUnique && !column.isIdentity && (
+                        <span className="text-blue-600 text-xs ml-2">Unique</span>
                       )}
                       {column.isIdentity && <span className="text-blue-600 text-xs ml-2">Auto-generated</span>}
                     </td>
