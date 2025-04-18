@@ -17,7 +17,7 @@ const HomePage: React.FC = () => {
   const handleSaveCode = (tableNames: string[], generatedCode: string) => {
     setTableNames(tableNames);
     setCode(generatedCode);
-    setCodeConfirmed(true);
+    // setCodeConfirmed(true);
     window.electronAPI.send('app:code', generatedCode);
   };
 

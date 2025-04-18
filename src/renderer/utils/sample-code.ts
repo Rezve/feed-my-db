@@ -1,18 +1,6 @@
-export const BasicCode = `// Welcome to the Data Schema Editor!
-// This is your space to create custom fake data for your application.
-// You can access the \`@faker-js/faker\` library with \`require('@faker-js/faker')\`.
-
-const { faker } = require('@faker-js/faker');
-
-function generateFakeData() {
-  return {
-    Name: faker.person.fullName(),
-    Email: faker.internet.email(),
-    Phone: faker.phone.number(),
-  };
-}
-
-// Tip: Click "Preview Script" to view and verify your code!
+export const BasicCode = `// Welcome to the Data Template Editor!
+// To get started, connect to a database in the Database Configuration panel.
+// This will allow you to select tables and create a data template for generating fake data.
 `;
 export const AdvancedCode = `// Welcome to the Data Schema Editor!
 // This is your space to create custom fake data for your application.

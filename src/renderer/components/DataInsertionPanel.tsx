@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { IPCService } from '../services/ipc-service';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faDatabase, faStop } from '@fortawesome/free-solid-svg-icons';
 
 export interface BatchConfig {
   tableNames: string[];
@@ -140,32 +142,36 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
           </div>
 
           {/* Controls */}
-          <div className="controls mt-4 flex space-x-2">
-            <button
-              onClick={handleStart}
-              disabled={isRunning || !isCodeConfirmed}
-              className={`w-full py-2 px-4 text-sm font-semibold text-white rounded-md shadow-sm transition-colors duration-200 ${
-                isRunning || !isCodeConfirmed
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
-              }`}
-            >
-              Insert Data
-            </button>
-            <button
-              onClick={handleStop}
-              disabled={!isRunning}
-              className={`w-full py-2 px-4 text-sm font-semibold text-white rounded-md shadow-sm transition-colors duration-200 ${
-                !isRunning
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2'
-              }`}
-            >
-              Stop
-            </button>
+          <div className="col-span-2">
+            <div className="controls mt-4 flex gap-4">
+              <button
+                onClick={handleStart}
+                disabled={isRunning || !isCodeConfirmed}
+                className={`flex items-center justify-center py-2 px-4 text-sm font-semibold text-white rounded-md shadow-sm transition-colors duration-200 ${
+                  isRunning || !isCodeConfirmed
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                }`}
+              >
+                <FontAwesomeIcon icon={faDatabase} className="w-4 h-4 mr-2" />
+                <span>Insert Data</span>
+              </button>
+              <button
+                onClick={handleStop}
+                disabled={!isRunning}
+                className={`flex items-center justify-center py-2 px-4 text-sm font-semibold text-white rounded-md shadow-sm transition-colors duration-200 ${
+                  !isRunning
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2'
+                }`}
+              >
+                <FontAwesomeIcon icon={faStop} className="w-4 h-4 mr-2" />
+                <span>Stop</span>
+              </button>
+            </div>
           </div>
           {!isCodeConfirmed && (
-            <div className="mt-5 text-sm italic text-gray-600">
+            <div className="mt-2 text-sm italic text-gray-600">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"

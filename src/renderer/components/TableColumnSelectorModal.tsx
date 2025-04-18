@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNotification } from './notification/NotificationContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCode, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
 
 interface TableColumnSelectorModalProps {
   isConnected: boolean;
@@ -538,15 +540,17 @@ ${Object.keys(selectedTables)
           {selectedTable && (
             <button
               onClick={handleAutoSelect}
-              className="px-4 mr-5 py-2 bg-gray-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-5"
             >
-              ✨ Try Auto Select
+              <FontAwesomeIcon icon={faMagicWandSparkles} className="w-4 h-4" />
+              Try Auto Select
             </button>
           )}
           <button
             onClick={handleCreateScript}
-            className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
+            <FontAwesomeIcon icon={faCode} className="w-4 h-4" />
             Create Script
           </button>
         </div>

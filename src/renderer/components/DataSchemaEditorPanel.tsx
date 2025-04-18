@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import MonacoEditor from '@monaco-editor/react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 
 interface DataSchemaEditorPanelProps {
   code: string;
@@ -34,7 +36,6 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
         setError(null);
 
         setCodeConfirmed(true);
-        // setConfirmButtonText('Confirmed');
         setHasCodeChanged(false);
       }
     });
@@ -135,10 +136,11 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
               <div className="flex items-center">
                 <button
                   className={`px-4 py-2 bg-blue-600 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                    ${!isConnected ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                    ${!isConnected || !hasCodeChanged ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
                   onClick={handleRunCode}
-                  disabled={!isConnected}
+                  disabled={!isConnected || !hasCodeChanged}
                 >
+                  <FontAwesomeIcon icon={faEye} className="w-4 h-4 mr-2" />
                   Preview Script
                 </button>
                 <button
@@ -148,6 +150,7 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
                   onClick={handleColumnConfiguration}
                   disabled={!isConnected}
                 >
+                  <FontAwesomeIcon icon={faPenToSquare} className="w-4 h-4 mr-2" />
                   Edit Template
                 </button>
 
@@ -166,7 +169,7 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
                       <circle cx="8" cy="4.5" r="1" />
                     </svg>
                     <span className="inline align-middle">
-                      Connect to a database to start defining your data schema
+                      Connect to a database to start defining your data template
                     </span>
                   </div>
                 )}

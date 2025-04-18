@@ -28,7 +28,7 @@ export class DataGeneratorManager {
       this.DB = DatabaseConnection.getInstance(this.dbConfig, true);
       await this.DB.getKnex().raw('SELECT 1;');
       window.webContents.send('app:status', 'Connected');
-      window.webContents.send('app:log', { log: '✅ Successfully connected to the database. Ready to go!' });
+      window.webContents.send('app:log', { log: '✅ Successfully connected to the database.' });
 
       const tables = await this.getTablesAndColumns();
       window.webContents.send('app:fetch-tables:result', { data: tables });
@@ -88,7 +88,7 @@ export class DataGeneratorManager {
       // const data = Object.keys(sampleData).map((key: any) => sampleData[key]());
 
       window.webContents.send('app:code:result', [{ data: sampleData }]);
-      window.webContents.send('app:status', 'Data Schema Ready');
+      window.webContents.send('app:status', 'Data Template Ready');
     } catch (error: any) {
       window.webContents.send('app:code:result', { error: error.message });
       window.webContents.send('app:status', `Error`);
