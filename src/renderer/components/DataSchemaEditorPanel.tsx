@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faInfoCircle, faPenToSquare, faTableList } from '@fortawesome/free-solid-svg-icons';
 
 interface DataSchemaEditorPanelProps {
   code: string;
@@ -177,15 +177,25 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
             </div>
 
             {/* Preview/Error Panel */}
-            <div className="w-1/2 bg-gray-50 p-4 rounded-md border border-gray-300 h-[40vh] overflow-y-auto">
-              <h2 className="text-md font-semibold">Data Preview & Errors</h2>
+            <div className="w-1/2 bg-white rounded-md p-8 border border-gray-300 h-[40vh] overflow-y-auto transition-all duration-300">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 tracking-tight">Data Preview & Errors</h2>
               {error ? (
-                <div className="text-red-600 text-sm">Error: {error}</div>
+                <div className="text-red-600 text-sm bg-red-50 p-4 rounded-lg border border-red-200 flex items-center gap-2">
+                  <FontAwesomeIcon icon={faInfoCircle} className="w-6 h-6 mr-2" />
+                  <span>Error: {error}</span>
+                </div>
               ) : sampleData ? (
-                <div>{sampleData.map((data, index) => renderTable(data, index))}</div>
+                <div className="overflow-x-auto">{sampleData.map((data, index) => renderTable(data, index))}</div>
               ) : (
-                <div className="text-gray-500 text-sm mt-2">
-                  Click 'Preview Script' to see fake data from your template or view errors.
+                <div className="text-gray-600 text-sm mt-6 text-center flex flex-col items-center gap-2">
+                  <FontAwesomeIcon icon={faTableList} className="w-6 h-6 mr-2" />
+                  <p>
+                    Click{' '}
+                    <span className="font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                      'Preview Script'
+                    </span>{' '}
+                    to view sample data or check for errors.
+                  </p>
                 </div>
               )}
             </div>
