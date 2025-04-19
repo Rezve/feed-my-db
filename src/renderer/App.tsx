@@ -10,16 +10,8 @@ import { DataVisualizationPage } from './pages/DataVisualizationPage';
 import { SQLEditorPage } from './pages/SQLEditorPage';
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState('feed-my-db'); // Default page
-  const [activeItem, setActiveItem] = useState<string | null>('feed-my-db'); // Default active item
-
-  // Map page IDs to components
-  const pageComponents: { [key: string]: React.ReactNode } = {
-    'feed-my-db': <HomePage />,
-    'data-visualization': <DataVisualizationPage />,
-    'sql-editor': <SQLEditorPage />,
-    settings: <SettingsPage />,
-  };
+  const [currentPage, setCurrentPage] = useState('feed-my-db');
+  const [activeItem, setActiveItem] = useState<string | null>('feed-my-db');
 
   return (
     <NotificationProvider>
@@ -31,7 +23,18 @@ const App: React.FC = () => {
           <SidebarMenu setCurrentPage={setCurrentPage} activeItem={activeItem} setActiveItem={setActiveItem} />
           {/* Main Content Area */}
           <div className="flex-1 overflow-auto bg-gray-100">
-            {pageComponents[currentPage] || <HomePage />} {/* Fallback to default */}
+            <div className={currentPage === 'feed-my-db' ? 'block' : 'hidden'}>
+              <HomePage />
+            </div>
+            <div className={currentPage === 'data-visualization' ? 'block' : 'hidden'}>
+              <DataVisualizationPage />
+            </div>
+            <div className={currentPage === 'sql-editor' ? 'block' : 'hidden'}>
+              <SQLEditorPage />
+            </div>
+            <div className={currentPage === 'settings' ? 'block' : 'hidden'}>
+              <SettingsPage />
+            </div>
           </div>
         </div>
         <StatusBar />
