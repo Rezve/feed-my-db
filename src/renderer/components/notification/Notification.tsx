@@ -1,8 +1,9 @@
 import React, { createContext } from 'react';
 import './Notification.css';
+import { X } from 'lucide-react';
 
 // Define notification types
-export type NotificationType = 'success' | 'warning' | 'error';
+export type NotificationType = 'info' | 'success' | 'warning' | 'error';
 
 // Ensure Notification interface is correctly defined
 export interface Notification {
@@ -34,6 +35,8 @@ export const Notification: React.FC<NotificationProps> = ({ message, type, onClo
         return 'bg-yellow-100 border-yellow-500 text-yellow-700';
       case 'error':
         return 'bg-red-100 border-red-500 text-red-700';
+      case 'info':
+        return 'bg-blue-100 border-blue-500 text-blue-700';
       default:
         return 'bg-gray-100 border-gray-500 text-gray-700';
     }
@@ -44,8 +47,8 @@ export const Notification: React.FC<NotificationProps> = ({ message, type, onClo
       className={`notification ${getTypeStyles()} border-l-4 p-4 mb-4 rounded shadow-md flex justify-between items-center`}
     >
       <span>{message}</span>
-      <button onClick={onClose} className="ml-4 text-sm font-medium hover:text-gray-900 focus:outline-none">
-        ×
+      <button onClick={onClose} className="ml-4 hover:text-gray-900 focus:outline-none">
+        <X size={20} />
       </button>
     </div>
   );

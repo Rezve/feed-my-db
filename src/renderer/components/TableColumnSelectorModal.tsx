@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNotification } from './notification/NotificationContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCode, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
+import { FakerOptions } from '../utils/faker-options';
 
 interface TableColumnSelectorModalProps {
   isConnected: boolean;
@@ -28,7 +29,6 @@ const TableColumnSelectorModal: React.FC<TableColumnSelectorModalProps> = ({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Mock database fetch (replace with real DB call)
   useEffect(() => {
     window.electronAPI.on('app:fetch-tables:result', (result) => {
       if (result.error) {
@@ -196,18 +196,34 @@ ${Object.keys(selectedTables)
   // Auto-select Faker functions for all columns
   const handleAutoSelect = () => {
     const updatedTables = { ...selectedTables };
+    let totalMatched = 0;
+    let isApplied = 0;
     for (const [tableName, tableData] of Object.entries(updatedTables)) {
       const newSelections: { [key: string]: string } = {};
       tableData.columns.forEach((column: any) => {
         const match = findBestFakerMatch(column.name);
-        if (match) {
+        if (match && !column.isIdentity && !column.foreignKey) {
           newSelections[column.name] = match;
+          totalMatched++;
         }
       });
-      updatedTables[tableName].fakerSelections = newSelections;
+      if (!updatedTables[tableName].fakerSelections || !Object.keys(updatedTables[tableName].fakerSelections).length) {
+        updatedTables[tableName].fakerSelections = newSelections;
+        isApplied++;
+      }
     }
     setSelectedTables(updatedTables);
-    addNotification('Auto-selected Faker functions for all related tables', 'success');
+
+    if (totalMatched > 0 && isApplied) {
+      addNotification(
+        `Success! Found ${totalMatched} matches. Some may have been skipped due to prior selections.`,
+        'success'
+      );
+    } else if (totalMatched > 0) {
+      addNotification(`Found ${totalMatched} Faker matches, but all were skipped (already selected).`, 'info');
+    } else {
+      addNotification('No suitable Faker functions were found for the related tables.', 'info');
+    }
   };
 
   // Find best matching Faker function for a column
@@ -215,7 +231,7 @@ ${Object.keys(selectedTables)
     const normalizedColumn = normalizeColumnName(columnName);
     let bestMatch: { value: string; score: number } | null = null;
 
-    for (const module of fakerOptions) {
+    for (const module of FakerOptions) {
       for (const method of module.methods) {
         const normalizedLabel = method.label.toLowerCase();
         if (fuzzySearch(normalizedColumn, normalizedLabel)) {
@@ -247,165 +263,11 @@ ${Object.keys(selectedTables)
   };
 
   // Faker.js options, grouped by module
-  const fakerOptions = [
-    {
-      module: 'Airline',
-      methods: [
-        { value: 'faker.airline.aircraftType', label: 'Aircraft Type' },
-        { value: 'faker.airline.airport', label: 'Airport' },
-      ],
-    },
-    {
-      module: 'Animal',
-      methods: [
-        { value: 'faker.animal.dog', label: 'Dog Breed' },
-        { value: 'faker.animal.cat', label: 'Cat Breed' },
-      ],
-    },
-    {
-      module: 'Color',
-      methods: [
-        { value: 'faker.color.human', label: 'Color Name' },
-        { value: 'faker.color.rgb', label: 'RGB Color' },
-      ],
-    },
-    {
-      module: 'Commerce',
-      methods: [
-        { value: 'faker.commerce.productName', label: 'Product Name' },
-        { value: 'faker.commerce.price', label: 'Price' },
-      ],
-    },
-    {
-      module: 'Company',
-      methods: [
-        { value: 'faker.company.name', label: 'Company Name' },
-        { value: 'faker.company.catchPhrase', label: 'Catch Phrase' },
-      ],
-    },
-    {
-      module: 'Database',
-      methods: [
-        { value: 'faker.database.column', label: 'Column Name' },
-        { value: 'faker.database.engine', label: 'Database Engine' },
-      ],
-    },
-    {
-      module: 'Date',
-      methods: [
-        { value: 'faker.date.past', label: 'Past Date' },
-        { value: 'faker.date.future', label: 'Future Date' },
-      ],
-    },
-    {
-      module: 'Finance',
-      methods: [
-        { value: 'faker.finance.accountNumber', label: 'Account Number' },
-        { value: 'faker.finance.transactionType', label: 'Transaction Type' },
-      ],
-    },
-    {
-      module: 'Git',
-      methods: [
-        { value: 'faker.git.commitMessage', label: 'Commit Message' },
-        { value: 'faker.git.branch', label: 'Branch Name' },
-      ],
-    },
-    {
-      module: 'Hacker',
-      methods: [
-        { value: 'faker.hacker.phrase', label: 'Hacker Phrase' },
-        { value: 'faker.hacker.noun', label: 'Hacker Noun' },
-      ],
-    },
-    {
-      module: 'Internet',
-      methods: [
-        { value: 'faker.internet.email', label: 'Email' },
-        { value: 'faker.internet.url', label: 'URL' },
-      ],
-    },
-    {
-      module: 'Location',
-      methods: [
-        { value: 'faker.location.city', label: 'City' },
-        { value: 'faker.location.zipCode', label: 'Zip Code' },
-      ],
-    },
-    {
-      module: 'Lorem',
-      methods: [
-        { value: 'faker.lorem.word', label: 'Word' },
-        { value: 'faker.lorem.sentence', label: 'Sentence' },
-      ],
-    },
-    {
-      module: 'Music',
-      methods: [
-        { value: 'faker.music.genre', label: 'Music Genre' },
-        { value: 'faker.music.songName', label: 'Song Name' },
-      ],
-    },
-    {
-      module: 'Number',
-      methods: [
-        { value: 'faker.number.int', label: 'Integer' },
-        { value: 'faker.number.float', label: 'Float' },
-      ],
-    },
-    {
-      module: 'Person',
-      methods: [
-        { value: 'faker.person.firstName', label: 'First Name' },
-        { value: 'faker.person.lastName', label: 'Last Name' },
-        { value: 'faker.person.fullName', label: 'Full Name' },
-      ],
-    },
-    {
-      module: 'Phone',
-      methods: [{ value: 'faker.phone.number', label: 'Phone Number' }],
-    },
-    {
-      module: 'Science',
-      methods: [
-        { value: 'faker.science.chemicalElement', label: 'Chemical Element' },
-        { value: 'faker.science.unit', label: 'Unit' },
-      ],
-    },
-    {
-      module: 'String',
-      methods: [
-        { value: 'faker.string.uuid', label: 'UUID' },
-        { value: 'faker.string.alphanumeric', label: 'Alphanumeric' },
-      ],
-    },
-    {
-      module: 'System',
-      methods: [
-        { value: 'faker.system.fileName', label: 'File Name' },
-        { value: 'faker.system.fileExt', label: 'File Extension' },
-      ],
-    },
-    {
-      module: 'Vehicle',
-      methods: [
-        { value: 'faker.vehicle.vehicle', label: 'Vehicle' },
-        { value: 'faker.vehicle.manufacturer', label: 'Vehicle Manufacturer' },
-      ],
-    },
-    {
-      module: 'Word',
-      methods: [
-        { value: 'faker.word.adjective', label: 'Adjective' },
-        { value: 'faker.word.noun', label: 'Noun' },
-      ],
-    },
-  ];
 
   // Get label for selected Faker function
   const getFakerLabel = (tableName: string, fakerFunc: string | undefined) => {
     if (!fakerFunc) return '-- Select Faker Function --';
-    for (const module of fakerOptions) {
+    for (const module of FakerOptions) {
       const method = module.methods.find((m) => m.value === fakerFunc);
       if (method) return method.label;
     }
@@ -427,18 +289,16 @@ ${Object.keys(selectedTables)
   };
 
   // Filter Faker options based on search query
-  const filteredFakerOptions = fakerOptions
-    .map((module) => {
-      const moduleMatches = fuzzySearch(searchQuery, module.module);
-      const filteredMethods = moduleMatches
-        ? module.methods
-        : module.methods.filter((method) => fuzzySearch(searchQuery, method.label));
-      return {
-        ...module,
-        methods: filteredMethods,
-      };
-    })
-    .filter((module) => module.methods.length > 0);
+  const filteredFakerOptions = FakerOptions.map((module) => {
+    const moduleMatches = fuzzySearch(searchQuery, module.module);
+    const filteredMethods = moduleMatches
+      ? module.methods
+      : module.methods.filter((method) => fuzzySearch(searchQuery, method.label));
+    return {
+      ...module,
+      methods: filteredMethods,
+    };
+  }).filter((module) => module.methods.length > 0);
 
   if (!isModalOpen) return null;
 
