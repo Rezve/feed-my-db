@@ -4,6 +4,8 @@ import crypto from 'crypto';
 // Unique Service name for this app
 const SERVICE_NAME = 'feed-my-db';
 
+let ENCRYPTION_KEY: any;
+
 // Function to store a key
 export async function storeKey(account: string) {
   try {
@@ -24,15 +26,23 @@ export async function storeKey(account: string) {
   }
 }
 
-export async function getKey(account: string) {
+export async function getKey(account: string = 'encryptionKey') {
   try {
+    // returned from memory
+    if (ENCRYPTION_KEY) {
+      console.log(`Key retrieved for account: ${account} from cache`);
+      return Buffer.from(ENCRYPTION_KEY, 'hex');
+    }
+
     const key = await keytar.getPassword(SERVICE_NAME, account);
     if (key) {
+      ENCRYPTION_KEY = key;
       console.log(`Key retrieved for account: ${account}`);
       return Buffer.from(key, 'hex');
     } else {
       console.log(`No key found for account: ${account}, creating one`);
       const newKey = crypto.randomBytes(32);
+      ENCRYPTION_KEY = newKey;
       await keytar.setPassword(SERVICE_NAME, account, newKey.toString('hex'));
       return newKey;
     }

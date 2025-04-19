@@ -36,7 +36,7 @@ export class DataGeneratorManager {
       // save user db configuration, if user choose to
       if (dbConfig.saveConnection) {
         if (dbConfig.password) {
-          const key = await getKey('encryptionKey');
+          const key = await getKey();
           if (!key) {
             return;
           }

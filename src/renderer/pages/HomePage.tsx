@@ -43,7 +43,7 @@ const HomePage: React.FC = () => {
           </div>
         </Panel>
 
-        <PanelResizeHandle className="border border-gray-300" />
+        <PanelResizeHandle className="border hover:border-blue-500 hover:bg-blue-100 transition" />
 
         <Panel>
           <PanelGroup autoSaveId="FeedMyDB-Editor" direction="vertical">
@@ -62,8 +62,7 @@ const HomePage: React.FC = () => {
                 </div>
               </Panel>
 
-              <PanelResizeHandle className="border border-gray-300" />
-
+              <PanelResizeHandle className="border hover:border-blue-500 hover:bg-blue-100 transition" />
               {/* Bottom Docked Logs */}
               <Panel minSize={5}>
                 <div className="h-1/3 bg-gray-100 p-4">
