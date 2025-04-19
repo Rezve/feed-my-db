@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { IPCService } from '../services/ipc-service';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDatabase, faStop } from '@fortawesome/free-solid-svg-icons';
+import { Minus, Plus } from 'lucide-react';
 
 export interface BatchConfig {
   tableNames: string[];
@@ -83,7 +84,7 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
           className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
           onClick={() => setIsConfigOpen(!isConfigOpen)}
         >
-          {isConfigOpen ? '-' : '+'}
+          {isConfigOpen ? <Minus size={18} /> : <Plus size={18} />}
         </button>
       </div>
 

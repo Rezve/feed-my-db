@@ -3,6 +3,7 @@ import { IPCService } from '../services/ipc-service';
 import { useNotification } from './notification/NotificationContext';
 import { faCheckCircle, faPlug } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Minus, Plus } from 'lucide-react';
 
 interface DBConfig {
   driver: string;
@@ -96,7 +97,7 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
           className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
           onClick={() => setIsDbConfigOpen(!isDbConfigOpen)}
         >
-          {isDbConfigOpen ? '-' : '+'}
+          {isDbConfigOpen ? <Minus size={18} /> : <Plus size={18} />}
         </button>
       </div>
 

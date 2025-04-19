@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faInfoCircle, faPenToSquare, faTableList } from '@fortawesome/free-solid-svg-icons';
+import { Minus, Plus } from 'lucide-react';
 
 interface DataSchemaEditorPanelProps {
   code: string;
@@ -102,7 +103,7 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
             className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
             onClick={() => setIsEditorOpen(!isEditorOpen)}
           >
-            {isEditorOpen ? '-' : '+'}
+            {isEditorOpen ? <Minus size={18} /> : <Plus size={18} />}
           </button>
         </div>
 
