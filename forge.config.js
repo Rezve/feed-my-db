@@ -4,6 +4,7 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
+    executableName: 'feed-my-db',
     icon: 'src/assets/icons/icon',
   },
   rebuildConfig: {},
@@ -51,5 +52,24 @@ module.exports = {
       [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
+    {
+      name: '@electron-forge/plugin-webpack',
+      config: {
+        mainConfig: './webpack.main.config.js',
+        renderer: {
+          config: './webpack.renderer.config.js',
+          entryPoints: [
+            {
+              html: './src/renderer/index.html',
+              js: './src/renderer/index.tsx',
+              name: 'main_window',
+              preload: {
+                js: './src/main/preload.ts',
+              },
+            },
+          ],
+        },
+      },
+    },
   ],
 };
