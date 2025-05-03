@@ -1,0 +1,22 @@
+{
+  "name": "feed-my-db",
+  "version": "1.0.0",
+  "description": "Desktop app to generate fake data for database",
+  "license": "MIT",
+  "author": {
+    "name": "Md. Rezve Hasan",
+    "email": "hello@rezve.com",
+    "url": "https://github.com/rezve"
+  },
+  "main": "./dist/main/main.js",
+  "scripts": {
+    "rebuild": "node -r ts-node/register ../../.erb/scripts/electron-rebuild.js",
+    "postinstall": "npm run rebuild && npm run link-modules",
+    "link-modules": "node -r ts-node/register ../../.erb/scripts/link-modules.ts"
+  },
+  "dependencies": {
+    "keytar": "^7.9.0",
+    "knex": "^3.1.0",
+    "mssql": "^11.0.1"
+  }
+}

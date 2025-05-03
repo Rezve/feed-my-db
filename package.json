@@ -2,50 +2,74 @@
   "name": "feed-my-db",
   "version": "1.0.0",
   "description": "Desktop app to generate fake data for database",
-  "main": "dist/main/main.js",
+  "contributors": [
+    {
+      "name": "Md. Rezve Hasan",
+      "email": "hello@rezve.com",
+      "url": "https://github.com/rezve"
+    }
+  ],
+  "main": "./.erb/dll/main.bundle.dev.js",
   "scripts": {
-    "start": "electron-forge start",
-    "dev": "tsc && webpack --mode development && electron .",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "lint": "eslint ."
+    "build": "concurrently \"npm run build:main\" \"npm run build:renderer\"",
+    "build:dll": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true NODE_OPTIONS=\"-r ts-node/register --no-warnings\" webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.ts",
+    "build:main": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true NODE_OPTIONS=\"-r ts-node/register --no-warnings\" webpack --config ./.erb/configs/webpack.config.main.prod.ts",
+    "build:renderer": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true NODE_OPTIONS=\"-r ts-node/register --no-warnings\" webpack --config ./.erb/configs/webpack.config.renderer.prod.ts",
+    "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && npm run build:dll",
+    "lint": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "package": "ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never && npm run build:dll",
+    "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
+    "prestart": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true NODE_OPTIONS=\"-r ts-node/register --no-warnings\" webpack --config ./.erb/configs/webpack.config.main.dev.ts",
+    "start": "ts-node ./.erb/scripts/check-port-in-use.js && npm run prestart && npm run start:renderer",
+    "start:main": "concurrently -k \"cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --watch --config ./.erb/configs/webpack.config.main.dev.ts\" \"electronmon .\"",
+    "start:preload": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true NODE_OPTIONS=\"-r ts-node/register --no-warnings\" webpack --config ./.erb/configs/webpack.config.preload.dev.ts",
+    "start:renderer": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true NODE_OPTIONS=\"-r ts-node/register --no-warnings\" webpack serve --config ./.erb/configs/webpack.config.renderer.dev.ts",
+    "test": "jest"
   },
   "author": "Md. Rezve Hasan",
   "license": "MIT",
   "private": false,
   "devDependencies": {
-    "@electron-forge/cli": "^7.8.0",
-    "@electron-forge/maker-deb": "^7.8.0",
-    "@electron-forge/maker-dmg": "^7.8.0",
-    "@electron-forge/maker-rpm": "^7.8.0",
-    "@electron-forge/maker-squirrel": "^7.8.0",
-    "@electron-forge/maker-zip": "^7.8.0",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.8.0",
-    "@electron-forge/plugin-fuses": "^7.8.0",
     "@electron/fuses": "^1.8.0",
     "@eslint/js": "^9.24.0",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.6.0",
     "@types/electron": "^1.6.12",
     "@types/node": "^22.13.17",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@types/react-resizable": "^3.0.8",
     "autoprefixer": "^10.4.21",
+    "browserslist-config-erb": "^0.0.3",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
+    "css-minimizer-webpack-plugin": "^7.0.2",
+    "detect-port": "^2.1.0",
     "electron": "^35.1.2",
+    "electron-builder": "^26.0.12",
+    "electronmon": "^2.0.3",
     "eslint": "^9.24.0",
     "eslint-config-prettier": "^10.1.1",
     "html-webpack-plugin": "^5.6.3",
+    "mini-css-extract-plugin": "^2.9.2",
+    "monaco-editor-webpack-plugin": "^7.1.0",
     "postcss": "^8.5.3",
     "postcss-loader": "^8.1.1",
     "prettier": "3.5.3",
+    "react-refresh": "^0.17.0",
+    "rimraf": "^6.0.1",
     "style-loader": "^4.0.0",
     "tailwindcss": "3",
     "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths-webpack-plugin": "^4.2.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.29.1",
     "webpack": "^5.98.0",
-    "webpack-cli": "^6.0.1"
+    "webpack-bundle-analyzer": "^4.10.2",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.1"
   },
   "dependencies": {
     "@faker-js/faker": "^9.6.0",
@@ -54,12 +78,114 @@
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@monaco-editor/react": "^4.7.0",
     "electron-squirrel-startup": "^1.0.1",
-    "keytar": "^7.9.0",
     "knex": "^3.1.0",
     "lucide-react": "^0.501.0",
+    "monaco-editor": "^0.52.2",
     "mssql": "^11.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-resizable-panels": "^2.1.7"
+  },
+  "browserslist": [
+    "extends browserslist-config-erb"
+  ],
+  "prettier": {
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": [
+          ".prettierrc",
+          ".eslintrc"
+        ],
+        "options": {
+          "parser": "json"
+        }
+      }
+    ]
+  },
+  "build": {
+    "productName": "FeedMyDB",
+    "appId": "org.erb.FeedMyDB",
+    "asar": true,
+    "asarUnpack": "**\\*.{node,dll}",
+    "files": [
+      "dist",
+      "node_modules",
+      "package.json"
+    ],
+    "mac": {
+      "sign": ".erb/scripts/notarize.js",
+      "notarize": false,
+      "target": {
+        "target": "default",
+        "arch": [
+          "arm64",
+          "x64"
+        ]
+      },
+      "type": "distribution",
+      "hardenedRuntime": true,
+      "entitlements": "assets/entitlements.mac.plist",
+      "entitlementsInherit": "assets/entitlements.mac.plist",
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Development"
+    },
+    "directories": {
+      "app": "release/app",
+      "buildResources": "assets",
+      "output": "release/build"
+    },
+    "extraResources": [
+      "./assets/**"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "rezve",
+      "repo": "feed-my-db"
+    }
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=14.x",
+      "onFail": "error"
+    },
+    "packageManager": {
+      "name": "npm",
+      "version": ">=7.x",
+      "onFail": "error"
+    }
+  },
+  "electronmon": {
+    "patterns": [
+      "!**/**",
+      "src/main/**",
+      ".erb/dll/**"
+    ],
+    "logLevel": "quiet"
   }
 }

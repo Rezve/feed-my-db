@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
 import { registerHandlers } from './ipc-handlers';
+import { resolveHtmlPath } from '../renderer/utils/path';
 
 function createWindow(): void {
   const mainWindow: BrowserWindow = new BrowserWindow({
@@ -10,7 +11,10 @@ function createWindow(): void {
     webPreferences: {
       nodeIntegration: false, // Disable direct Node.js access in renderer
       contextIsolation: true, // Enable context isolation for security
-      preload: path.join(__dirname, 'preload.js'), // Path to compiled preload script
+      sandbox: false,
+      preload: app.isPackaged
+        ? path.join(__dirname, 'preload.js')
+        : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
 
@@ -21,14 +25,15 @@ function createWindow(): void {
 
   registerHandlers(mainWindow);
 
-  const htmlPath = path.join(__dirname, '../index.html');
-  mainWindow.loadFile(htmlPath).catch((err) => {
-    console.error('Failed to load HTML:', err);
-  });
+  mainWindow.loadURL(resolveHtmlPath('index.html'));
 }
 
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'Reason:', reason);
 });

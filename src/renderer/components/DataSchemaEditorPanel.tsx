@@ -1,8 +1,16 @@
 import { useEffect, useState } from 'react';
-import MonacoEditor from '@monaco-editor/react';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import MonacoEditor, { loader } from '@monaco-editor/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faInfoCircle, faPenToSquare, faTableList } from '@fortawesome/free-solid-svg-icons';
+import {
+  faEye,
+  faInfoCircle,
+  faPenToSquare,
+  faTableList,
+} from '@fortawesome/free-solid-svg-icons';
 import { Minus, Plus } from 'lucide-react';
+
+loader.config({ monaco });
 
 interface DataSchemaEditorPanelProps {
   code: string;
@@ -75,8 +83,14 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
                     {Object.entries(value).map(([key, value]) => {
                       return (
                         <tr key={key} className="border-b border-gray-300">
-                          <td className="p-2 font-semibold border-r border-gray-300">{key}</td>
-                          <td className="p-2">{value instanceof Date ? value.toISOString() : String(value)}</td>
+                          <td className="p-2 font-semibold border-r border-gray-300">
+                            {key}
+                          </td>
+                          <td className="p-2">
+                            {value instanceof Date
+                              ? value.toISOString()
+                              : String(value)}
+                          </td>
                         </tr>
                       );
                     })}
@@ -98,7 +112,9 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
     >
       <div className={`relative ${!isConnected ? '' : ''}`}>
         <div className="section-header flex items-center justify-between p-2 bg-gray-200 border-b border-gray-300">
-          <h2 className="text-sm font-semibold text-gray-800">Data Template Editor</h2>
+          <h2 className="text-sm font-semibold text-gray-800">
+            Data Template Editor
+          </h2>
           <button
             className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
             onClick={() => setIsEditorOpen(!isEditorOpen)}
@@ -121,6 +137,9 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
                     if (isCodeConfirmed && !hasCodeChanged) {
                       setHasCodeChanged(true);
                     }
+                  }}
+                  onMount={(editor, monaco) => {
+                    console.log('Monaco loaded from:', monaco);
                   }}
                   options={{
                     minimap: { enabled: false },
@@ -151,7 +170,10 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
                   onClick={handleColumnConfiguration}
                   disabled={!isConnected}
                 >
-                  <FontAwesomeIcon icon={faPenToSquare} className="w-4 h-4 mr-2" />
+                  <FontAwesomeIcon
+                    icon={faPenToSquare}
+                    className="w-4 h-4 mr-2"
+                  />
                   Edit Template
                 </button>
 
@@ -179,17 +201,27 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
 
             {/* Preview/Error Panel */}
             <div className="w-1/2 bg-white rounded-md p-8 border border-gray-300 h-[40vh] overflow-y-auto transition-all duration-300">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6 tracking-tight">Data Preview & Errors</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 tracking-tight">
+                Data Preview & Errors
+              </h2>
               {error ? (
                 <div className="text-red-600 text-sm bg-red-50 p-4 rounded-lg border border-red-200 flex items-center gap-2">
-                  <FontAwesomeIcon icon={faInfoCircle} className="w-6 h-6 mr-2" />
+                  <FontAwesomeIcon
+                    icon={faInfoCircle}
+                    className="w-6 h-6 mr-2"
+                  />
                   <span>Error: {error}</span>
                 </div>
               ) : sampleData ? (
-                <div className="overflow-x-auto">{sampleData.map((data, index) => renderTable(data, index))}</div>
+                <div className="overflow-x-auto">
+                  {sampleData.map((data, index) => renderTable(data, index))}
+                </div>
               ) : (
                 <div className="text-gray-600 text-sm mt-6 text-center flex flex-col items-center gap-2">
-                  <FontAwesomeIcon icon={faTableList} className="w-6 h-6 mr-2" />
+                  <FontAwesomeIcon
+                    icon={faTableList}
+                    className="w-6 h-6 mr-2"
+                  />
                   <p>
                     Click{' '}
                     <span className="font-medium text-blue-600 hover:text-blue-700 transition-colors">
