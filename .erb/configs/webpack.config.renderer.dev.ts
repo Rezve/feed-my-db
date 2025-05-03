@@ -120,6 +120,7 @@ const configuration: webpack.Configuration = {
       : [
           new webpack.DllReferencePlugin({
             context: webpackPaths.dllPath,
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             manifest: require(manifest),
             sourceType: 'var',
           }),

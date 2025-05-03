@@ -1,10 +1,57 @@
-import { app, BrowserWindow } from 'electron';
+/* eslint-disable @typescript-eslint/no-require-imports */
+import { app, BrowserWindow, shell } from 'electron';
+import log from 'electron-log';
+import { autoUpdater } from 'electron-updater';
 import * as path from 'path';
 import { registerHandlers } from './ipc-handlers';
 import { resolveHtmlPath } from '../renderer/utils/path';
 
-function createWindow(): void {
-  const mainWindow: BrowserWindow = new BrowserWindow({
+let mainWindow: BrowserWindow | null = null;
+
+class AppUpdater {
+  constructor() {
+    log.transports.file.level = 'info';
+    autoUpdater.logger = log;
+    autoUpdater.checkForUpdatesAndNotify();
+  }
+}
+
+if (process.env.NODE_ENV === 'production') {
+  const sourceMapSupport = require('source-map-support');
+  sourceMapSupport.install();
+}
+
+const isDebug =
+  process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
+
+if (isDebug) {
+  require('electron-debug').default();
+}
+
+const installExtensions = async () => {
+  const installer = require('electron-devtools-installer');
+  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+  const extensions = ['REACT_DEVELOPER_TOOLS'];
+
+  return installer
+    .default(
+      extensions.map((name) => installer[name]),
+      forceDownload,
+    )
+    .catch(console.log);
+};
+
+const createWindow = async () => {
+  const RESOURCES_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, 'assets')
+    : path.join(__dirname, '../../assets');
+
+  const getAssetPath = (...paths: string[]): string => {
+    return path.join(RESOURCES_PATH, ...paths);
+  };
+
+  mainWindow = new BrowserWindow({
+    icon: getAssetPath('icon.png'),
     show: false,
     frame: false,
     backgroundColor: '#f3f4f6',
@@ -18,22 +65,45 @@ function createWindow(): void {
     },
   });
 
+  if (isDebug) {
+    await installExtensions();
+  }
+
   mainWindow.once('ready-to-show', () => {
-    mainWindow.maximize();
-    mainWindow.show();
+    mainWindow?.maximize();
+    mainWindow?.show();
   });
 
   registerHandlers(mainWindow);
 
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
-}
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
 
-app.whenReady().then(createWindow);
+  mainWindow.loadURL(resolveHtmlPath('index.html'));
+
+  // Open urls in the user's browser
+  mainWindow.webContents.setWindowOpenHandler((edata) => {
+    shell.openExternal(edata.url);
+    return { action: 'deny' };
+  });
+
+  // Remove this if your app does not use auto updates
+  new AppUpdater();
+};
+
+app
+  .whenReady()
+  .then(() => {
+    createWindow();
+    app.on('activate', () => {
+      // On macOS it's common to re-create a window in the app when the
+      // dock icon is clicked and there are no other windows open.
+      if (mainWindow === null) createWindow();
+    });
+  })
+  .catch(console.log);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'Reason:', reason);
 });
