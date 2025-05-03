@@ -8,13 +8,15 @@ import { resolveHtmlPath } from '../renderer/utils/path';
 
 let mainWindow: BrowserWindow | null = null;
 
-class AppUpdater {
-  constructor() {
+const checkUpdate = () => {
+  try {
     log.transports.file.level = 'info';
     autoUpdater.logger = log;
     autoUpdater.checkForUpdatesAndNotify();
+  } catch (error) {
+    console.log(error);
   }
-}
+};
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -88,8 +90,7 @@ const createWindow = async () => {
     return { action: 'deny' };
   });
 
-  // Remove this if your app does not use auto updates
-  new AppUpdater();
+  checkUpdate();
 };
 
 app
