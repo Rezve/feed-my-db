@@ -138,9 +138,6 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
                       setHasCodeChanged(true);
                     }
                   }}
-                  onMount={(editor, monaco) => {
-                    console.log('Monaco loaded from:', monaco);
-                  }}
                   options={{
                     minimap: { enabled: false },
                     scrollBeyondLastLine: false,
