@@ -20,13 +20,21 @@ const App: React.FC = () => {
         <TitleBar />
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar Menu */}
-          <SidebarMenu setCurrentPage={setCurrentPage} activeItem={activeItem} setActiveItem={setActiveItem} />
+          <SidebarMenu
+            setCurrentPage={setCurrentPage}
+            activeItem={activeItem}
+            setActiveItem={setActiveItem}
+          />
           {/* Main Content Area */}
           <div className="flex-1 overflow-auto bg-gray-100">
             <div className={currentPage === 'feed-my-db' ? 'block' : 'hidden'}>
               <HomePage />
             </div>
-            <div className={currentPage === 'data-visualization' ? 'block' : 'hidden'}>
+            <div
+              className={
+                currentPage === 'data-visualization' ? 'block' : 'hidden'
+              }
+            >
               <DataVisualizationPage />
             </div>
             <div className={currentPage === 'sql-editor' ? 'block' : 'hidden'}>
