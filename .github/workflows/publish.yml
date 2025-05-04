@@ -30,7 +30,7 @@ jobs:
       - name: Install and build
         run: |
           npm install
-          npm run build:release
+          npm run build
 
       - name: Publish releases
         env:
