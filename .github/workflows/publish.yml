@@ -33,19 +33,19 @@ jobs:
           npm run build
 
       - name: Debug release/app contents before move
-        run: ls -R release/app
+        run: cat release/app/package.json
 
-      - name: Move dist contents to release/app
-        run: |
-          mv release/app/dist/main/* release/app/
-          mv release/app/dist/renderer/* release/app/
-          rm -rf release/app/dist
+      # - name: Move dist contents to release/app
+      #   run: |
+      #     mv release/app/dist/main/* release/app/
+      #     mv release/app/dist/renderer/* release/app/
+      #     rm -rf release/app/dist
 
-      - name: Debug release/app contents after move
-        run: ls -R release/app
+      # - name: Debug release/app contents after move
+      #   run: ls -R release/app
 
-      - name: Ensure package.json is in release/app
-        run: cp package.json release/app/
+      # - name: Ensure package.json is in release/app
+      #   run: cp package.json release/app/
 
       - name: Publish releases
         env:
