@@ -143,12 +143,22 @@
     },
     "win": {
       "target": [
-        "nsis"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "linux": {
       "target": [
-        "AppImage"
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "category": "Development"
     },
