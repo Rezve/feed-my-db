@@ -61,3 +61,4 @@ jobs:
           else
             npm exec electron-builder -- --win --x64 --publish always
           fi
+        shell: bash
