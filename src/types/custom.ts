@@ -1,4 +1,4 @@
-import { BatchConfig } from '../renderer/components/BatchConfig';
+import { BatchConfig } from '../renderer/components/DataInsertionPanel';
 
 export interface ElectronAPI {
   getNodeVersion: () => string;

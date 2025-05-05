@@ -21,7 +21,7 @@ function registerHandlers(mainWindow: BrowserWindow) {
   });
 
   ipcMain.on('app:code', (event, code) => {
-    DataGeneratorManager.setGeneratorFunction(mainWindow, code);
+    DataGeneratorManager.setDataSchemaEditorPanel(mainWindow, code);
   });
 
   ipcMain.on('window:minimize', () => mainWindow.minimize());

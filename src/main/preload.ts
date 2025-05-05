@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { BatchConfig } from '../renderer/components/BatchConfig';
+import { BatchConfig } from '../renderer/components/DataInsertionPanel';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   invoke: (channel: string, data: any) => {

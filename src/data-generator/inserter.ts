@@ -3,12 +3,11 @@ import DatabaseConnection from './connection';
 import { BrowserWindow } from 'electron';
 
 export class DataInserter {
-  private db: Knex;
+  public db: Knex;
   private shouldStopProcess: boolean;
 
   constructor(
     private DBConnection: DatabaseConnection,
-    private totalRecords: number,
     private batchSize: number,
     private concurrentBatches: number,
     private logInterval: number
@@ -21,90 +20,133 @@ export class DataInserter {
     this.shouldStopProcess = true;
   }
 
-  private async insertSingleBatch(tableName: string, rows: any[]): Promise<number> {
-    await this.db(tableName).insert(rows);
-    return rows.length;
+  private async insertSingleBatch(
+    tableName: string,
+    rows: any[],
+    primaryKeyColumn: string
+  ): Promise<{ count: number; keys: any[]; failedRows?: any[] }> {
+    try {
+      // Use OUTPUT for primary keys
+      const result = await this.db(tableName)
+        .insert(rows)
+        .returning(`${primaryKeyColumn || '*'}`);
+
+      const keys = result.map((row: any) => row[primaryKeyColumn]);
+      return { count: rows.length, keys };
+    } catch (error: any) {
+      if (error.number === 2627 || error.message.includes('Violation of UNIQUE KEY constraint')) {
+        console.warn(`Duplicate key violation in ${tableName}: ${error.message}`);
+        return { count: 0, keys: [], failedRows: rows };
+      }
+      throw new Error(`Failed to insert batch into ${tableName}: ${error.message}`);
+    }
   }
 
-  public async insertAll(window: BrowserWindow, tableName: string, userFunctionToGenerateData: any): Promise<number> {
+  public async insertAll(
+    window: BrowserWindow,
+    tableName: string,
+    dataGenerator: () => any,
+    totalRecords: number,
+    primaryKeyColumn: string
+  ): Promise<{ count: number; primaryKeys: any[]; tableName: string }> {
     this.shouldStopProcess = false;
 
-    const totalBatches = Math.ceil(this.totalRecords / this.batchSize);
     let insertedRecords = 0;
-    const batchPromises: Promise<number>[] = [];
+    const primaryKeys: any[] = [];
+    const maxRetries = 5; // Increased for large datasets
+    const retryQueue: { rows: any[]; attempt: number }[] = [];
     const startTime = Date.now();
+    let batchIndex = 0;
 
-    // Initial progress update
-    this.sendProgressUpdate(window, {
-      insertedRecords,
-      totalRecords: this.totalRecords,
-      percentage: 0,
-      elapsedTime: 0,
-      estimatedTimeRemaining: 0,
-      currentBatch: 0,
-      totalBatches,
-    });
+    // Cache generated rows to reduce Faker.js calls
+    const rowCache: any[] = [];
+    const fillCache = (count: number) => {
+      for (let i = 0; i < count; i++) {
+        rowCache.push(dataGenerator());
+      }
+    };
 
-    for (let i = 0; i < totalBatches; i += this.concurrentBatches) {
-      const currentBatchSize = Math.min(this.concurrentBatches, totalBatches - i);
+    // Generate initial cache
+    fillCache(Math.min(this.batchSize * this.concurrentBatches, totalRecords));
 
-      if (this.shouldStopProcess) {
+    while (insertedRecords < totalRecords && !this.shouldStopProcess) {
+      const recordsNeeded = Math.min(this.batchSize, totalRecords - insertedRecords);
+      if (recordsNeeded <= 0 && retryQueue.length === 0) break;
+
+      const batchPromises: Promise<{ count: number; keys: any[]; failedRows?: any[] }>[] = [];
+      const batchesToProcess: { rows: any[]; isRetry: boolean; attempt: number }[] = [];
+
+      // Add new rows from cache
+      if (recordsNeeded > 0 && rowCache.length < recordsNeeded) {
+        fillCache(recordsNeeded - rowCache.length);
+      }
+      if (recordsNeeded > 0) {
+        const rows = rowCache.splice(0, recordsNeeded);
+        batchesToProcess.push({ rows, isRetry: false, attempt: 1 });
+      }
+
+      // Add retry batches
+      while (retryQueue.length > 0 && batchesToProcess.length < this.concurrentBatches) {
+        const retryBatch = retryQueue.shift()!;
+        if (retryBatch.attempt <= maxRetries) {
+          const newRows = this.generateBatch(retryBatch.rows.length, dataGenerator);
+          batchesToProcess.push({ rows: newRows, isRetry: true, attempt: retryBatch.attempt });
+        }
+      }
+
+      for (const { rows, attempt } of batchesToProcess) {
+        if (this.shouldStopProcess) break;
+
+        batchPromises.push(
+          this.insertSingleBatch(tableName, rows, primaryKeyColumn).then(({ count, keys, failedRows }) => {
+            insertedRecords += count;
+            primaryKeys.push(...keys);
+
+            if (failedRows && failedRows.length > 0 && attempt < maxRetries) {
+              retryQueue.push({ rows: failedRows, attempt: attempt + 1 });
+              window.webContents.send('app:log', {
+                log: `🔄 Retrying ${failedRows.length} rows in ${tableName} (attempt ${attempt} of ${maxRetries})`,
+              });
+            } else if (failedRows) {
+              window.webContents.send('app:log', {
+                log: `⚠️ Skipped ${failedRows.length} rows in ${tableName} after ${maxRetries} retries.`,
+              });
+            }
+
+            return { count, keys, failedRows };
+          })
+        );
+        batchIndex++;
+      }
+
+      await Promise.all(batchPromises);
+
+      // Progress update
+      const elapsedTime = (Date.now() - startTime) / 1000;
+      const percentage = (insertedRecords / totalRecords) * 100;
+      const recordsPerSecond = insertedRecords / elapsedTime || 1;
+      const estimatedTimeRemaining = (totalRecords - insertedRecords) / recordsPerSecond;
+
+      if (batchIndex % this.logInterval === 0 || insertedRecords >= totalRecords) {
         this.sendProgressUpdate(window, {
           insertedRecords,
-          totalRecords: this.totalRecords,
-          percentage: (insertedRecords / this.totalRecords) * 100,
-          elapsedTime: (Date.now() - startTime) / 1000,
-          estimatedTimeRemaining: 0,
-          currentBatch: i,
-          totalBatches,
-          stopped: true,
+          totalRecords,
+          percentage,
+          elapsedTime,
+          estimatedTimeRemaining,
+          currentBatch: batchIndex,
+          totalBatches: Math.ceil(totalRecords / this.batchSize),
         });
-        break;
       }
-
-      for (let j = 0; j < currentBatchSize; j++) {
-        const batchIndex = i + j;
-        const recordsToGenerate = Math.min(this.batchSize, this.totalRecords - batchIndex * this.batchSize);
-
-        if (this.shouldStopProcess) {
-          break;
-        }
-
-        if (recordsToGenerate > 0) {
-          const rows = this.generateBatch(recordsToGenerate, userFunctionToGenerateData);
-          batchPromises.push(
-            this.insertSingleBatch(tableName, rows).then((count) => {
-              insertedRecords += count;
-
-              // Calculate progress metrics
-              const elapsedTime = (Date.now() - startTime) / 1000; // in seconds
-              const percentage = (insertedRecords / this.totalRecords) * 100;
-              const recordsPerSecond = insertedRecords / elapsedTime;
-              const estimatedTimeRemaining = (this.totalRecords - insertedRecords) / recordsPerSecond || 0;
-
-              // Send update on every batch or at logInterval
-              if (batchIndex % this.logInterval === 0 || batchIndex === totalBatches - 1 || percentage == 100) {
-                this.sendProgressUpdate(window, {
-                  insertedRecords,
-                  totalRecords: this.totalRecords,
-                  percentage,
-                  elapsedTime,
-                  estimatedTimeRemaining,
-                  currentBatch: batchIndex + 1,
-                  totalBatches,
-                });
-              }
-              return count;
-            })
-          );
-        }
-      }
-
-      await Promise.all(batchPromises.splice(0));
-      await new Promise((resolve) => setTimeout(resolve, 1));
     }
 
-    return insertedRecords;
+    if (insertedRecords < totalRecords) {
+      window.webContents.send('app:log', {
+        log: `⚠️ Inserted ${insertedRecords} of ${totalRecords} requested records for ${tableName} due to duplicates or stop request.`,
+      });
+    }
+
+    return { count: insertedRecords, primaryKeys, tableName };
   }
 
   private sendProgressUpdate(
@@ -133,8 +175,12 @@ export class DataInserter {
     });
   }
 
-  private generateBatch(size: number, userFunctionToGenerateData: any): any[] {
-    return Array.from({ length: size }, userFunctionToGenerateData);
+  private generateBatch(recordsToGenerate: number, dataGenerator: () => any): any[] {
+    const rows: any[] = [];
+    for (let i = 0; i < recordsToGenerate; i++) {
+      rows.push(dataGenerator());
+    }
+    return rows;
   }
 
   public async getTotalCount(tableName: string): Promise<number> {

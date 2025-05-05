@@ -1,0 +1,56 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    if: ${{ github.repository_owner == 'rezve' }}
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+
+      - name: Install Node and NPM
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libarchive-tools libsecret-1-dev
+          sudo snap install snapcraft --classic
+
+      - name: Install and build
+        run: |
+          npm install
+          npm run build
+
+      - name: Publish releases
+        env:
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASS }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          GH_TOKEN: ${{ secrets._GITHUB_TOKEN }}
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            npm exec electron-builder -- --linux --x64 --publish always
+          elif [ "${{ matrix.os }}" = "windows-latest" ]; then
+            npm exec electron-builder -- --win --x64 --publish always
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            npm exec electron-builder -- --mac --x64 --publish always
+          fi
+        shell: bash

@@ -32,9 +32,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
 
   useEffect(() => {
     const handleProgress = (status: string) => {
-      if (!status.includes('Error')) {
-        setStatus(status);
-      }
+      setStatus(status);
     };
     window.electronAPI.on('app:status', handleProgress);
   }, []);
@@ -45,7 +43,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
         <h3 className="text-sm font-semibold text-gray-800">Progress</h3>
         <span
           className={`px-2 py-1 rounded-full text-xs text-white ${
-            status.toLowerCase() === 'processing' ? 'bg-green-500' : 'bg-gray-500'
+            status.toLowerCase() === 'running' ? 'bg-green-500' : 'bg-gray-500'
           }`}
         >
           {status}

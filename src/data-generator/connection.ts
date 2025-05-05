@@ -5,7 +5,15 @@ export class DatabaseConnection {
   private knex: Knex;
 
   // Private constructor to prevent direct instantiation
-  private constructor({ host, user, password, database, port, encrypt, trustServerCertificate }: any) {
+  private constructor({
+    host,
+    user,
+    password,
+    database,
+    port,
+    encrypt,
+    trustServerCertificate,
+  }: any) {
     this.knex = knex({
       client: 'mssql',
       connection: {
@@ -27,14 +35,22 @@ export class DatabaseConnection {
       },
       // Additional Knex configurations
       debug: process.env.NODE_ENV === 'development',
-      asyncStackTraces: process.env.NODE_ENV === 'development',
+      // asyncStackTraces: process.env.NODE_ENV === 'development',
     });
   }
 
   // Singleton pattern to ensure single instance
   public static getInstance(
-    { host, user, password, database, port, encrypt, trustServerCertificate }: any,
-    forcedNew = false
+    {
+      host,
+      user,
+      password,
+      database,
+      port,
+      encrypt,
+      trustServerCertificate,
+    }: any,
+    forcedNew = false,
   ): DatabaseConnection {
     if (forcedNew) {
       DatabaseConnection.instance = new DatabaseConnection({

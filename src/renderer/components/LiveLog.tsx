@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import LogSectionWithIPC from '../elements/ProgressBar';
+import { Minus, Plus } from 'lucide-react';
 
 interface LogEntry {
   id: number;
@@ -47,7 +48,7 @@ const LiveLog: React.FC = () => {
           className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
           onClick={() => setIsLogsOpen(!isLogsOpen)}
         >
-          {isLogsOpen ? '-' : '+'}
+          {isLogsOpen ? <Minus size={18} /> : <Plus size={18} />}
         </button>
       </div>
 

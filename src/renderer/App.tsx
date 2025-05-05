@@ -1,46 +1,50 @@
-import React from 'react';
 import './styles/App.css';
-import HomePage from './pages/HomePage';
+import React, { useState } from 'react';
 import { NotificationProvider } from './components/notification/NotificationContext';
+import SidebarMenu from './components/SideBarMenu';
 import StatusBar from './components/Statusbar';
+import TitleBar from './components/TitleBar';
+import HomePage from './pages/HomePage';
+import SettingsPage from './pages/SettingsPage';
+import { DataVisualizationPage } from './pages/DataVisualizationPage';
+import { SQLEditorPage } from './pages/SQLEditorPage';
 
 const App: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState('feed-my-db');
+  const [activeItem, setActiveItem] = useState<string | null>('feed-my-db');
+
   return (
     <NotificationProvider>
       <div className="h-screen flex flex-col bg-gray-100">
-        {/* Custom Title Bar */}
-        <div
-          className="flex items-center justify-between p-2 bg-gray-800 text-white"
-          style={{ webkitAppRegion: 'drag' }}
-        >
-          <span className="text-sm font-medium">Feed My DB</span>
-          <div className="flex flex-row space-x-1" style={{ webkitAppRegion: 'no-drag' }}>
-            <button
-              className="w-8 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 rounded-md transition-colors duration-200"
-              onClick={() => window.electronAPI.send('window:minimize')}
+        {/* Title Bar */}
+        <TitleBar />
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar Menu */}
+          <SidebarMenu
+            setCurrentPage={setCurrentPage}
+            activeItem={activeItem}
+            setActiveItem={setActiveItem}
+          />
+          {/* Main Content Area */}
+          <div className="flex-1 overflow-auto bg-gray-100">
+            <div className={currentPage === 'feed-my-db' ? 'block' : 'hidden'}>
+              <HomePage />
+            </div>
+            <div
+              className={
+                currentPage === 'data-visualization' ? 'block' : 'hidden'
+              }
             >
-              −
-            </button>
-            <button
-              className="w-8 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 rounded-md transition-colors duration-200"
-              onClick={() => window.electronAPI.send('window:maximize')}
-            >
-              □
-            </button>
-            <button
-              className="w-8 h-6 flex items-center justify-center bg-red-600 hover:bg-red-700 rounded-md transition-colors duration-200"
-              onClick={() => window.electronAPI.send('window:close')}
-            >
-              ✕
-            </button>
+              <DataVisualizationPage />
+            </div>
+            <div className={currentPage === 'sql-editor' ? 'block' : 'hidden'}>
+              <SQLEditorPage />
+            </div>
+            <div className={currentPage === 'settings' ? 'block' : 'hidden'}>
+              <SettingsPage />
+            </div>
           </div>
         </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 overflow-hidden">
-          <HomePage />
-        </div>
-
         <StatusBar />
       </div>
     </NotificationProvider>

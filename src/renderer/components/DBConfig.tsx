@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { IPCService } from '../services/ipc-service';
 import { useNotification } from './notification/NotificationContext';
+import { faCheckCircle, faPlug } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Minus, Plus } from 'lucide-react';
 
 interface DBConfig {
   driver: string;
@@ -67,8 +70,7 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
       setIsLoading(false);
       if (result.success == true) {
         setIsConnected(true);
-        addNotification('Collection Established Successfully', 'success');
-        setIsDbConfigOpen(false);
+        addNotification('Successfully connected to the database', 'success');
         return;
       }
       addNotification(`Error: ${result.message}`, 'error');
@@ -95,7 +97,7 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
           className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
           onClick={() => setIsDbConfigOpen(!isDbConfigOpen)}
         >
-          {isDbConfigOpen ? '-' : '+'}
+          {isDbConfigOpen ? <Minus size={18} /> : <Plus size={18} />}
         </button>
       </div>
 
@@ -208,7 +210,7 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
                 <label className="ml-2 text-sm font-medium text-gray-700">Trust Server Certificate</label>
               </div>
             </div>
-            <div className="flex items-start space-x-2 mt-4">
+            <div className="flex items-center space-x-2">
               <input
                 id="saveConnection"
                 type="checkbox"
@@ -222,25 +224,31 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
             </div>
 
             {/* Connect Button */}
-            <div className="config-item flex items-end">
+            <div className="flex items-center">
               <button
-                className={`w-full py-2 px-4 text-sm font-semibold text-white rounded-md shadow-sm transition-colors duration-200 relative ${
-                  isConnected
+                onClick={handleConnect}
+                disabled={isConnected || isLoading}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-md shadow-sm transition-colors duration-200 ${
+                  isConnected || isLoading
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
                 }`}
-                disabled={isConnected || isLoading}
-                onClick={handleConnect}
               >
-                <span className={`${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-                  {isConnected ? 'Connected' : 'Connect'}
-                </span>
-
-                {isLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center space-x-2">
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     <span>Connecting...</span>
                   </div>
+                ) : isConnected ? (
+                  <>
+                    <FontAwesomeIcon icon={faPlug} className="w-4 h-4" />
+                    <span>Connected</span>
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faCheckCircle} className="w-4 h-4" />
+                    <span>Connect</span>
+                  </>
                 )}
               </button>
             </div>

@@ -1,4 +1,4 @@
-import { BatchConfig } from '../components/BatchConfig';
+import { BatchConfig } from '../components/DataInsertionPanel';
 
 export class IPCService {
   static listenForUpdates(callback: any) {

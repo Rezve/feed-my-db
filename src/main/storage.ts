@@ -18,10 +18,13 @@ export async function saveConfig(config: any) {
 export async function loadConfig() {
   try {
     const stringData = await fs.readFile(configPath, 'utf8');
-    const config = stringData && JSON.parse(stringData);
+    if (!stringData) {
+      return {};
+    }
+    const config = JSON.parse(stringData);
     const dbConfig = config.dbConfig;
     if (dbConfig?.encryptedPassword) {
-      const key = await getKey('encryptionKey');
+      const key = await getKey();
       if (!key) {
         return {};
       }
