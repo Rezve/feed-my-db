@@ -1,6 +1,6 @@
 {
   "name": "feed-my-db",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Desktop app to generate fake data for database",
   "license": "MIT",
   "author": {
