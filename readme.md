@@ -1,6 +1,11 @@
 # 🥣 Feed My DB
 
-**Feed My DB** is an open-source desktop application for generating and inserting synthetic fake data into databases. Built with React, TypeScript, Electron, and powered by Faker.js, it allows users to define data schemas, preview generated data, and perform batch insertions with ease. Whether you're testing applications, populating databases for development, or simulating real-world datasets, Feed My DB has you covered.
+**Feed My DB** is an open-source desktop application for generating and inserting synthetic fake data into databases.It allows users to define data schemas, preview generated data, and perform batch insertions with ease. Whether you're testing applications, populating databases for development, or simulating real-world datasets, Feed My DB has you covered.
+
+![Build](https://github.com/rezve/feed-my-db/actions/workflows/publish.yml/badge.svg)
+![GitHub release](https://img.shields.io/github/v/release/rezve/feed-my-db)
+![GitHub all releases](https://img.shields.io/github/downloads/rezve/feed-my-db/total)
+![GitHub stars](https://img.shields.io/github/stars/rezve/feed-my-db?style=social)
 
 ## ✨ Features
 
@@ -52,6 +57,7 @@ We welcome contributions and are excited to collaborate with the community!
 
 At this stage, we’re **currently only accepting issue reports** as the project is still in active development. Once the code reaches a stable phase, we’ll start accepting contributions such as bug fixes and feature implementations.
 
+<!--
 ### 📌 Before contributing a new feature:
 
 Please create an issue first to discuss your idea. This helps avoid duplicate work and ensures alignment with the project goals.
@@ -61,15 +67,15 @@ Please create an issue first to discuss your idea. This helps avoid duplicate wo
 ### When contributions open up, the general process will be:
 
 1. Fork the repository.
-2. Create a feature branch:  
+2. Create a feature branch:
    `git checkout -b feature/your-feature`
-3. Commit your changes:  
+3. Commit your changes:
    `git commit -m "Add your feature"`
-4. Push to your branch:  
+4. Push to your branch:
    `git push origin feature/your-feature`
 5. Open a Pull Request.
 
----
+--- -->
 
 Thanks for your interest in making this project better 💙  
 We really appreciate your support!
@@ -82,9 +88,8 @@ We really appreciate your support!
   - [ ] MySQL
   - [ ] PostgresSQL
   - [ ] MongoDB
-- Support for generating related table using foreign key
+- [x] Support for generating related table using foreign key
 - Predefined schema templates for common use cases.
-- Advanced Faker.js options (e.g., custom constraints, relationships).
 
 ## Acknowledgments
 
