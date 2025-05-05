@@ -16,8 +16,7 @@ jobs:
     strategy:
       matrix:
         # os: [macos-latest]
-        # os: [ubuntu-latest, windows-latest]
-        os: [windows-latest]
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout git repo
@@ -39,12 +38,6 @@ jobs:
         run: |
           npm install
           npm run build
-
-      # - name: Debug release/app contents before move
-      #   run: |
-      #     ls -R release/app
-      #     ls -R release/app/dist
-      #     ls -R release/app/dist/main
 
       - name: Publish releases
         env:
