@@ -1,6 +1,11 @@
 # 🥣 Feed My DB
 
-**Feed My DB** is an open-source desktop application for generating and inserting synthetic fake data into databases. Built with React, TypeScript, Electron, and powered by Faker.js, it allows users to define data schemas, preview generated data, and perform batch insertions with ease. Whether you're testing applications, populating databases for development, or simulating real-world datasets, Feed My DB has you covered.
+![Build](https://github.com/rezve/feed-my-db/actions/workflows/publish.yml/badge.svg)
+![GitHub release](https://img.shields.io/github/v/release/rezve/feed-my-db)
+![GitHub all releases](https://img.shields.io/github/downloads/rezve/feed-my-db/total)
+![GitHub stars](https://img.shields.io/github/stars/rezve/feed-my-db?style=social)
+
+**Feed My DB** is an open-source desktop application for generating and inserting synthetic fake data into databases. It allows users to define data schemas, preview generated data, and perform batch insertions with ease. Whether you're testing applications, populating databases for development, or simulating real-world datasets, Feed My DB has you covered.
 
 ## ✨ Features
 
