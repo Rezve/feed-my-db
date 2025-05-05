@@ -7,16 +7,13 @@ on:
 
 jobs:
   publish:
-    # To enable auto publishing to github, update your electron publisher
-    # config in package.json > "build" and remove the conditional below
     if: ${{ github.repository_owner == 'rezve' }}
 
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        # os: [macos-latest]
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - name: Checkout git repo
@@ -32,7 +29,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libarchive-tools libsecret-1-dev snapcraft
+          sudo apt-get install -y libarchive-tools libsecret-1-dev
+          sudo snap install snapcraft --classic
 
       - name: Install and build
         run: |
@@ -41,7 +39,6 @@ jobs:
 
       - name: Publish releases
         env:
-          # The APPLE_* values are used for auto updates signing
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASS }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -51,7 +48,9 @@ jobs:
         run: |
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
             npm exec electron-builder -- --linux --x64 --publish always
-          else
+          elif [ "${{ matrix.os }}" = "windows-latest" ]; then
             npm exec electron-builder -- --win --x64 --publish always
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            npm exec electron-builder -- --mac --x64 --publish always
           fi
         shell: bash
