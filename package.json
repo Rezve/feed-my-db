@@ -110,8 +110,8 @@
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
-      "release/app/**/*",
-      "node_modules/**/*",
+      "dist/**/*",
+      "node_modules",
       "package.json"
     ],
     "mac": {
