@@ -37,7 +37,9 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
   const handleStart = async () => {
     const batchConfig: BatchConfig = {
       tableNames: tableNames ? tableNames : [],
-      totalRecords: Object.fromEntries((tableNames && tableNames.map((table) => [table, totalRecords])) || []),
+      totalRecords: Object.fromEntries(
+        (tableNames && tableNames.map((table) => [table, totalRecords])) || [],
+      ),
       batchSize,
       concurrentBatches,
     };
@@ -74,7 +76,7 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
       className={`config-section ${
         isConfigOpen ? 'open' : 'closed'
       } bg-white border border-gray-300 rounded-md shadow-sm relative 
-      ${showReadyAnimation ? 'animate-border-pulse' : ''}
+      ${showReadyAnimation ? 'animate-border-pulse' : ''} mt-5
         `}
     >
       {/* Section Header */}
@@ -94,7 +96,9 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
           <div className="config-grid grid grid-cols-2 gap-4">
             {/* Table Name */}
             <div className="config-item flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Selected Table</label>
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Selected Table
+              </label>
               <input
                 type="text"
                 placeholder={!tableNames ? 'Select a Table' : ''}
@@ -107,11 +111,15 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
             </div>
             {/* Total Records */}
             <div className="config-item flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Total Records</label>
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Total Records
+              </label>
               <input
                 type="number"
                 value={totalRecords}
-                onChange={(e) => setTotalRecords(Math.max(1, parseInt(e.target.value)))}
+                onChange={(e) =>
+                  setTotalRecords(Math.max(1, parseInt(e.target.value)))
+                }
                 disabled={isRunning}
                 className={`w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500`}
               />
@@ -119,11 +127,15 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
 
             {/* Batch Size */}
             <div className="config-item flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Batch Size</label>
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Batch Size
+              </label>
               <input
                 type="number"
                 value={batchSize}
-                onChange={(e) => setBatchSize(Math.max(1, parseInt(e.target.value)))}
+                onChange={(e) =>
+                  setBatchSize(Math.max(1, parseInt(e.target.value)))
+                }
                 disabled={isRunning}
                 className={`w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500`}
               />
@@ -131,11 +143,15 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
 
             {/* Concurrent Batches */}
             <div className="config-item flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Concurrent Batches</label>
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Concurrent Batches
+              </label>
               <input
                 type="number"
                 value={concurrentBatches}
-                onChange={(e) => setConcurrentBatches(Math.max(1, parseInt(e.target.value)))}
+                onChange={(e) =>
+                  setConcurrentBatches(Math.max(1, parseInt(e.target.value)))
+                }
                 disabled={isRunning}
                 className={`w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500`}
               />
@@ -185,7 +201,9 @@ const DataInsertionPanel: React.FC<DataInsertionPanelProps> = ({
                 <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.02-.598l.088-.416c.066-.3.04-.431-.225-.492l-.451-.084.738-3.468c.194-.897-.105-1.319-.808-1.319z" />
                 <circle cx="8" cy="4.5" r="1" />
               </svg>
-              <span className="inline align-middle">Test and confirm your data to enable batch insertion</span>
+              <span className="inline align-middle">
+                Test and confirm your data to enable batch insertion
+              </span>
             </div>
           )}
         </div>

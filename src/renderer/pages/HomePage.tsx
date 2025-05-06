@@ -26,12 +26,15 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-full">
-      <PanelGroup direction="horizontal" autoSaveId="FeedMyDB-Sidebar">
-        {/* Left Sidebar */}
-        <Panel defaultSize={18} collapsedSize={5} minSize={5}>
-          <div className="w-80 flex flex-col bg-gray-100 p-4 space-y-4 overflow-y-auto">
-            <DBConfig isConnected={isConnected} setIsConnected={setIsConnected} />
+    <div className="flex flex-row h-screen">
+      <PanelGroup direction="horizontal" autoSaveId="main-layout">
+        {/* Left Panel */}
+        <Panel defaultSize={30} minSize={20} className="m-5">
+          <div className="flex flex-col h-full">
+            <DBConfig
+              isConnected={isConnected}
+              setIsConnected={setIsConnected}
+            />
             <DataInsertionPanel
               isConnected={isConnected}
               isRunning={isRunning}
@@ -43,36 +46,36 @@ const HomePage: React.FC = () => {
           </div>
         </Panel>
 
+        {/* Horizontal Resize Handle */}
         <PanelResizeHandle className="border hover:border-blue-500 hover:bg-blue-100 transition" />
 
-        <Panel>
-          <PanelGroup autoSaveId="FeedMyDB-Editor" direction="vertical">
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col">
-              <Panel>
-                <div className="flex-1 p-4">
-                  <DataSchemaEditorPanel
-                    isConnected={isConnected}
-                    isCodeConfirmed={isCodeConfirmed}
-                    setCodeConfirmed={setCodeConfirmed}
-                    openTableConfigModal={handleOpenModal}
-                    code={code}
-                    setCode={setCode}
-                  />
-                </div>
-              </Panel>
+        {/* Right Panel */}
+        <Panel minSize={20} className="mt-5">
+          <PanelGroup direction="vertical" autoSaveId="right-panel-layout">
+            {/* DataSchemaEditorPanel */}
+            <Panel defaultSize={60} minSize={20}>
+              <DataSchemaEditorPanel
+                isConnected={isConnected}
+                isCodeConfirmed={isCodeConfirmed}
+                setCodeConfirmed={setCodeConfirmed}
+                openTableConfigModal={handleOpenModal}
+                code={code}
+                setCode={setCode}
+              />
+            </Panel>
 
-              <PanelResizeHandle className="border hover:border-blue-500 hover:bg-blue-100 transition" />
-              {/* Bottom Docked Logs */}
-              <Panel minSize={5}>
-                <div className="h-1/3 bg-gray-100 p-4">
-                  <LiveLog />
-                </div>
-              </Panel>
-            </div>
+            {/* Vertical Resize Handle */}
+            <PanelResizeHandle className="border hover:border-blue-500 hover:bg-blue-100 transition" />
+
+            {/* LiveLog */}
+            <Panel minSize={20}>
+              <LiveLog />
+            </Panel>
           </PanelGroup>
         </Panel>
       </PanelGroup>
+
+      {/* Modal */}
       <TableColumnSelectorModal
         isConnected={isConnected}
         onSave={handleSaveCode}

@@ -11,7 +11,7 @@ const StatusBar: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-2 bg-gray-200 border-t border-gray-300 text-sm text-gray-600">
+    <div className="pl-1 bg-gray-200 border-t border-gray-300 text-sm text-gray-600">
       Status: {status ? status : 'Ready'}
     </div>
   );

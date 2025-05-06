@@ -27,20 +27,18 @@ const App: React.FC = () => {
           />
           {/* Main Content Area */}
           <div className="flex-1 overflow-auto bg-gray-100">
-            <div className={currentPage === 'feed-my-db' ? 'block' : 'hidden'}>
+            <div className={currentPage === 'feed-my-db' ? '' : 'hidden'}>
               <HomePage />
             </div>
             <div
-              className={
-                currentPage === 'data-visualization' ? 'block' : 'hidden'
-              }
+              className={currentPage === 'data-visualization' ? '' : 'hidden'}
             >
               <DataVisualizationPage />
             </div>
-            <div className={currentPage === 'sql-editor' ? 'block' : 'hidden'}>
+            <div className={currentPage === 'sql-editor' ? '' : 'hidden'}>
               <SQLEditorPage />
             </div>
-            <div className={currentPage === 'settings' ? 'block' : 'hidden'}>
+            <div className={currentPage === 'settings' ? '' : 'hidden'}>
               <SettingsPage />
             </div>
           </div>

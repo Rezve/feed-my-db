@@ -57,3 +57,11 @@
     opacity: 1;
   }
 }
+
+.titlebar {
+  -webkit-app-region: drag;
+}
+
+.window-controls {
+  -webkit-app-region: no-drag;
+}
