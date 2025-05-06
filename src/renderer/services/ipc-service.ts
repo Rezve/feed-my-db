@@ -28,4 +28,11 @@ export class IPCService {
   static stop() {
     window.electronAPI.stop('app:stop');
   }
+
+  static async getVersion(): Promise<string> {
+    return (await window.electronAPI.invoke(
+      'app:version',
+      '',
+    )) as unknown as string;
+  }
 }

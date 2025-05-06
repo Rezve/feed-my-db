@@ -3,7 +3,7 @@ import { BatchConfig } from '../renderer/components/DataInsertionPanel';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   invoke: (channel: string, data: any) => {
-    const validChannels = ['storage:loadConfig', 'app:start'];
+    const validChannels = ['storage:loadConfig', 'app:start', 'app:version'];
 
     if (validChannels.includes(channel)) {
       return ipcRenderer.invoke(channel, data);
@@ -27,10 +27,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeAllListeners: (channel: string) => {
     ipcRenderer.removeAllListeners(channel);
   },
-  start: (channel: string, batchConfig: BatchConfig) => ipcRenderer.send(channel, batchConfig),
+  start: (channel: string, batchConfig: BatchConfig) =>
+    ipcRenderer.send(channel, batchConfig),
   stop: (channel: string) => ipcRenderer.send(channel),
   send: (channel: string, data: any) => {
-    const validChannels = ['window:minimize', 'window:maximize', 'window:close', 'app:code', 'app:connect'];
+    const validChannels = [
+      'window:minimize',
+      'window:maximize',
+      'window:close',
+      'app:code',
+      'app:connect',
+    ];
 
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
