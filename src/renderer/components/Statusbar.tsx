@@ -23,7 +23,7 @@ const StatusBar: React.FC = () => {
 
   return (
     <div className="flex justify-between bg-gray-200 border-t border-gray-300 text-sm text-gray-600">
-      <div className="pl-1">Status: {status ? status : 'Ready'}</div>
+      <div className="pl-1">Status: {status ?? 'Ready'}</div>
       {version && <div className="mr-5">v{version}</div>}
     </div>
   );
