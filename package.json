@@ -120,16 +120,16 @@
       "package.json"
     ],
     "mac": {
-      "notarize": false,
-      "target": {
-        "target": "default",
-        "arch": [
-          "x64"
-        ]
-      },
-      "type": "distribution",
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "arch": [
+        "x64"
+      ],
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "sign": false
     },
     "dmg": {
       "contents": [
