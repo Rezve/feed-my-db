@@ -1,6 +1,8 @@
 # 🥣 Feed My DB
 
-![Build](https://github.com/rezve/feed-my-db/actions/workflows/publish.yml/badge.svg)
+<!-- ![Build](https://github.com/rezve/feed-my-db/actions/workflows/publish.yml/badge.svg) -->
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Rezve_feed-my-db&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Rezve_feed-my-db)
 ![GitHub release](https://img.shields.io/github/v/release/rezve/feed-my-db)
 ![GitHub all releases](https://img.shields.io/github/downloads/rezve/feed-my-db/total)
 ![GitHub stars](https://img.shields.io/github/stars/rezve/feed-my-db?style=social)
