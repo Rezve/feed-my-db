@@ -124,9 +124,6 @@
         "dmg",
         "zip"
       ],
-      "arch": [
-        "x64"
-      ],
       "hardenedRuntime": false,
       "gatekeeperAssess": false,
       "sign": false
