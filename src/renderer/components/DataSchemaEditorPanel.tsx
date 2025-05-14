@@ -153,7 +153,7 @@ const DataSchemaEditorPanel: React.FC<DataSchemaEditorPanelProps> = ({
               </div>
 
               {/* Preview/Error Panel */}
-              <div className="w-1/2 bg-white rounded-md p-8 border border-gray-300 h-[40vh] overflow-y-auto transition-all duration-300">
+              <div className="w-1/2 bg-white rounded-md p-2 border border-gray-300 h-[40vh] overflow-y-auto transition-all duration-300">
                 <h2 className="text-xl font-semibold text-gray-900 mb-6 tracking-tight">
                   Data Preview & Errors
                 </h2>
