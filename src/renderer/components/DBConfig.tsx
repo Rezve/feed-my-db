@@ -22,7 +22,10 @@ interface DBConfigProps {
   setIsConnected: (flag: boolean) => void;
 }
 
-const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any) => {
+const DBConfig: React.FC<DBConfigProps> = ({
+  isConnected,
+  setIsConnected,
+}: any) => {
   const [isDbConfigOpen, setIsDbConfigOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { addNotification } = useNotification();
@@ -40,7 +43,10 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
     saveConnection: false,
   });
 
-  const handleDbConfigChange = (field: keyof DBConfig, value: string | number | boolean) => {
+  const handleDbConfigChange = (
+    field: keyof DBConfig,
+    value: string | number | boolean,
+  ) => {
     setDbConfig((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -92,7 +98,9 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
     >
       {/* Section Header */}
       <div className="section-header flex items-center justify-between p-2 bg-gray-200 border-b border-gray-300">
-        <h2 className="text-sm font-semibold text-gray-800">Database Configuration</h2>
+        <h2 className="text-sm font-semibold text-gray-800">
+          Database Configuration
+        </h2>
         <button
           className="toggle-btn w-6 h-6 flex items-center justify-center text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 transition-colors duration-200"
           onClick={() => setIsDbConfigOpen(!isDbConfigOpen)}
@@ -106,7 +114,9 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
         <div className="section-content p-4">
           <div className="config-grid grid grid-cols-1 mb-5">
             <div className="config-item flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Database</label>
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Database
+              </label>
               <select
                 value={dbConfig.driver}
                 onChange={(e) => handleDbConfigChange('driver', e.target.value)}
@@ -125,7 +135,9 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
           <div className="config-grid grid grid-cols-2 gap-4">
             {/* Host */}
             <div className="config-item flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Host</label>
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Host
+              </label>
               <input
                 placeholder="localhost"
                 type="text"
@@ -138,7 +150,9 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
 
             {/* User */}
             <div className="config-item flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">User</label>
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                User
+              </label>
               <input
                 placeholder="username"
                 type="text"
@@ -151,11 +165,15 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
 
             {/* Password */}
             <div className="config-item flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
               <input
                 type="password"
                 value={dbConfig.password}
-                onChange={(e) => handleDbConfigChange('password', e.target.value)}
+                onChange={(e) =>
+                  handleDbConfigChange('password', e.target.value)
+                }
                 disabled={isConnected}
                 className={`w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500`}
               />
@@ -163,12 +181,16 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
 
             {/* Database */}
             <div className="config-item flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Database</label>
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Database
+              </label>
               <input
                 placeholder="database_name"
                 type="text"
                 value={dbConfig.database}
-                onChange={(e) => handleDbConfigChange('database', e.target.value)}
+                onChange={(e) =>
+                  handleDbConfigChange('database', e.target.value)
+                }
                 disabled={isConnected}
                 className={`w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500`}
               />
@@ -176,12 +198,16 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
 
             {/* Port */}
             <div className="config-item flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Port</label>
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Port
+              </label>
               <input
                 placeholder="default port"
                 type="number"
                 value={dbConfig.port}
-                onChange={(e) => handleDbConfigChange('port', parseInt(e.target.value))}
+                onChange={(e) =>
+                  handleDbConfigChange('port', parseInt(e.target.value))
+                }
                 disabled={isConnected}
                 className={`w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500`}
               />
@@ -193,21 +219,32 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
                 <input
                   type="checkbox"
                   checked={dbConfig.encrypt}
-                  onChange={(e) => handleDbConfigChange('encrypt', e.target.checked)}
+                  onChange={(e) =>
+                    handleDbConfigChange('encrypt', e.target.checked)
+                  }
                   disabled={isConnected}
                   className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:text-gray-400"
                 />
-                <label className="ml-2 text-sm font-medium text-gray-700">Encrypt</label>
+                <label className="ml-2 text-sm font-medium text-gray-700">
+                  Encrypt
+                </label>
               </div>
               <div className="flex items-center">
                 <input
                   type="checkbox"
                   checked={dbConfig.trustServerCertificate}
-                  onChange={(e) => handleDbConfigChange('trustServerCertificate', e.target.checked)}
+                  onChange={(e) =>
+                    handleDbConfigChange(
+                      'trustServerCertificate',
+                      e.target.checked,
+                    )
+                  }
                   disabled={isConnected}
                   className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:text-gray-400"
                 />
-                <label className="ml-2 text-sm font-medium text-gray-700">Trust Server Certificate</label>
+                <label className="ml-2 text-sm font-medium text-gray-700">
+                  Trust Server Certificate
+                </label>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -215,10 +252,15 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
                 id="saveConnection"
                 type="checkbox"
                 checked={dbConfig.saveConnection}
-                onChange={(e) => handleDbConfigChange('saveConnection', e.target.checked)}
+                onChange={(e) =>
+                  handleDbConfigChange('saveConnection', e.target.checked)
+                }
                 className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
-              <label htmlFor="save-connection" className="text-sm text-gray-700">
+              <label
+                htmlFor="save-connection"
+                className="text-sm text-gray-700"
+              >
                 Save Connection Settings
               </label>
             </div>
@@ -241,12 +283,12 @@ const DBConfig: React.FC<DBConfigProps> = ({ isConnected, setIsConnected }: any)
                   </div>
                 ) : isConnected ? (
                   <>
-                    <FontAwesomeIcon icon={faPlug} className="w-4 h-4" />
+                    <FontAwesomeIcon icon={faCheckCircle} className="w-4 h-4" />
                     <span>Connected</span>
                   </>
                 ) : (
                   <>
-                    <FontAwesomeIcon icon={faCheckCircle} className="w-4 h-4" />
+                    <FontAwesomeIcon icon={faPlug} className="w-4 h-4" />
                     <span>Connect</span>
                   </>
                 )}
